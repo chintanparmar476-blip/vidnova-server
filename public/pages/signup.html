@@ -68,26 +68,36 @@
     function strength(v){const f=document.getElementById('strFill');let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;f.style.width=(s/4*100)+'%';f.style.background=s<=1?'#e50914':s<=2?'#ff9800':s<=3?'#ffc107':'#4caf50';}
     function show(id,v){document.getElementById(id).style.display=v?'block':'none';}
     async function signup(){
-      const name=document.getElementById('name').value.trim();
-      const email=document.getElementById('email').value.trim();
-      const pass=document.getElementById('pass').value;
-      const conf=document.getElementById('conf').value;
-      const terms=document.getElementById('terms').checked;
-      let ok=true;
-      show('nameErr',!name);  if(!name)ok=false;
-      show('emailErr',!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)); if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))ok=false;
-      show('passErr',pass.length<8); if(pass.length<8)ok=false;
-      show('confErr',pass!==conf); if(pass!==conf)ok=false;
-      show('termsErr',!terms); if(!terms)ok=false;
-      if(!ok)return;
-      const btn=document.getElementById('btn'); btn.textContent='Creating...'; btn.disabled=true;
-      try{
-        const r=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pass}),credentials:'include'});
-        const d=await r.json();
-        if(d.success){ sessionStorage.setItem('vnUser',JSON.stringify(d.user)); window.location.href='plan-select.html'; }
-        else{ alert(d.error||'Signup failed'); btn.textContent='Create Account'; btn.disabled=false; }
-      }catch(e){ alert('Cannot connect to server. Is it running?'); btn.textContent='Create Account'; btn.disabled=false; }
-    }
+      async function signup() {
+  const name  = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('pass').value;
+
+  if (!name || !email || pass.length < 8) return;
+
+  try {
+    const btn = document.getElementById('btn');
+    btn.textContent = 'Creating...'; btn.disabled = true;
+
+    // Create user in Firebase
+    const cred = await window.firebaseCreateUser(window.firebaseAuth, email, pass);
+
+    // Also save to your Node.js server
+    await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password: pass }),
+      credentials: 'include'
+    });
+
+    window.location.href = 'plan-select.html';
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') alert('Email already registered.');
+    else if (e.code === 'auth/weak-password') alert('Password too weak.');
+    else alert(e.message);
+    btn.textContent = 'Create Account'; btn.disabled = false;
+  }
+}
     function googleSignup(){ window.location.href='signin.html'; }
   </script>
 </body>
