@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – Choose Plan</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .step-bar{display:flex;gap:8px;align-items:center;margin-bottom:32px;}
+    .step{width:32px;height:4px;border-radius:2px;background:var(--border);}
+    .step.done{background:var(--accent);}
+    /* payment layout */
+    .pay-layout{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;}
+    .pay-left{flex:1;min-width:280px;}
+    .pay-right{width:300px;}
+    @media(max-width:700px){.pay-right{width:100%;}}
+  </style>
+</head>
+<body class="auth-body">
+  <nav class="nav" style="position:relative;background:rgba(0,0,0,.6)">
+    <a href="../index.html" class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></a>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <div class="step-bar" id="stepBar">
+        <div class="step done"></div><div class="step done"></div><div class="step" id="step3dot"></div>
+      </div>
+      <span style="font-size:.8rem;color:var(--muted)" id="stepLabel">Step 2 of 3</span>
+    </div>
+  </nav>
+
+  <!-- STEP 2: PLAN SELECT -->
+  <main class="auth-main" id="planScreen" style="padding-top:80px">
+    <div style="max-width:900px;width:100%;padding:0 16px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:.8rem;letter-spacing:2px;color:var(--accent);font-weight:600;margin-bottom:6px">STEP 2 OF 3</div>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem">Choose Your Plan</h2>
+        <p style="color:var(--muted)">No contracts. Cancel anytime.</p>
+      </div>
+      <div class="plan-cards" id="planCards">
+        <div class="plan-card" id="pc-basic" onclick="selectPlan('basic',149,this)">
+          <div class="plan-ico">📺</div><div class="plan-nm">Basic</div>
+          <div class="plan-pr">₹149<span>/mo</span></div>
+          <ul class="plan-feats">
+            <li><i class="fas fa-check ok"></i>HD Quality</li>
+            <li><i class="fas fa-check ok"></i>1 Screen</li>
+            <li><i class="fas fa-times no"></i>No Downloads</li>
+          </ul>
+        </div>
+        <div class="plan-card sel" id="pc-standard" onclick="selectPlan('standard',499,this)">
+          <div class="plan-pop">POPULAR</div>
+          <div class="plan-ico">🎬</div><div class="plan-nm">Standard</div>
+          <div class="plan-pr">₹499<span>/mo</span></div>
+          <ul class="plan-feats">
+            <li><i class="fas fa-check ok"></i>Full HD</li>
+            <li><i class="fas fa-check ok"></i>2 Screens</li>
+            <li><i class="fas fa-check ok"></i>Downloads</li>
+          </ul>
+        </div>
+        <div class="plan-card" id="pc-premium" onclick="selectPlan('premium',799,this)">
+          <div class="plan-ico">🏆</div><div class="plan-nm">Premium</div>
+          <div class="plan-pr" style="color:var(--gold)">₹799<span>/mo</span></div>
+          <ul class="plan-feats">
+            <li><i class="fas fa-check ok"></i>4K + HDR</li>
+            <li><i class="fas fa-check ok"></i>4 Screens</li>
+            <li><i class="fas fa-check ok"></i>Downloads</li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn-cont" onclick="goPayment()">Continue to Payment &nbsp;›</button>
+    </div>
+  </main>
+
+  <!-- STEP 3: PAYMENT -->
+  <main class="auth-main" id="payScreen" style="display:none;padding-top:80px;align-items:flex-start">
+    <div style="max-width:860px;width:100%;padding:0 16px">
+      <div style="margin-bottom:24px">
+        <div style="font-size:.8rem;letter-spacing:2px;color:var(--accent);font-weight:600;margin-bottom:6px">STEP 3 OF 3</div>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem">Payment Details</h2>
+        <p style="color:var(--muted)">Secured by 256-bit SSL encryption.</p>
+      </div>
+      <div class="pay-layout">
+        <div class="pay-left">
+          <!-- Method tabs -->
+          <div class="pay-methods">
+            <div class="pay-tab on" id="tab-card" onclick="payMethod('card')"><i class="fas fa-credit-card"></i>Card</div>
+            <div class="pay-tab" id="tab-upi"  onclick="payMethod('upi')"><i class="fas fa-mobile-alt"></i>UPI</div>
+            <div class="pay-tab" id="tab-nb"   onclick="payMethod('nb')"><i class="fas fa-university"></i>Net Banking</div>
+            <div class="pay-tab" id="tab-wlt"  onclick="payMethod('wlt')"><i class="fas fa-wallet"></i>Wallet</div>
+          </div>
+
+          <!-- CARD -->
+          <div class="pay-section on" id="ps-card">
+            <div class="fg"><label>Name on Card</label><input type="text" id="cardName" placeholder="Full Name"/></div>
+            <div class="fg"><label>Card Number</label><input type="text" id="cardNum" placeholder="1234  5678  9012  3456" maxlength="19" oninput="fmtCard(this)"/></div>
+            <div class="card-row">
+              <div class="fg"><label>Expiry</label><input type="text" id="cardExp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)"/></div>
+              <div class="fg"><label>CVV</label><input type="password" id="cardCvv" placeholder="•••" maxlength="4"/></div>
+            </div>
+            <div class="chk-row"><input type="checkbox" checked/><label>Save card for future payments</label></div>
+          </div>
+
+          <!-- UPI -->
+          <div class="pay-section" id="ps-upi">
+            <p style="color:var(--muted);margin-bottom:14px;font-size:.88rem">Pay instantly via any UPI app</p>
+            <div class="upi-apps">
+              <div class="upi-app" onclick="selUpi(this)">📱 Google Pay</div>
+              <div class="upi-app" onclick="selUpi(this)">💜 PhonePe</div>
+              <div class="upi-app" onclick="selUpi(this)">🪙 Paytm</div>
+              <div class="upi-app" onclick="selUpi(this)">🏦 BHIM</div>
+            </div>
+            <div class="fg"><label>Or enter UPI ID</label><input type="text" placeholder="name@upi"/></div>
+          </div>
+
+          <!-- NET BANKING -->
+          <div class="pay-section" id="ps-nb">
+            <div class="fg"><label>Select Bank</label>
+              <select><option value="">-- Select Bank --</option>
+                <option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option>
+                <option>Axis Bank</option><option>Kotak Mahindra</option><option>Punjab National Bank</option>
+                <option>Bank of Baroda</option><option>Canara Bank</option>
+              </select>
+            </div>
+            <p style="color:var(--muted);font-size:.82rem">You will be redirected to your bank to complete payment.</p>
+          </div>
+
+          <!-- WALLET -->
+          <div class="pay-section" id="ps-wlt">
+            <div class="upi-apps">
+              <div class="upi-app" onclick="selUpi(this)">🪙 Paytm</div>
+              <div class="upi-app" onclick="selUpi(this)">💚 Amazon Pay</div>
+              <div class="upi-app" onclick="selUpi(this)">🔵 Mobikwik</div>
+            </div>
+          </div>
+
+          <!-- Promo -->
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <input type="text" id="promoCode" placeholder="Promo code" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);color:#fff;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.88rem"/>
+            <button onclick="applyPromo()" style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif">Apply</button>
+          </div>
+          <div id="promoMsg" style="font-size:.8rem;margin-top:6px;display:none"></div>
+
+          <button class="btn-main" style="margin-top:24px" onclick="pay()" id="payBtn">
+            <i class="fas fa-lock" style="margin-right:7px"></i><span id="payBtnTxt">Pay Now</span>
+          </button>
+          <div style="display:flex;align-items:center;gap:7px;margin-top:12px;font-size:.75rem;color:var(--muted)">
+            <i class="fas fa-shield-alt" style="color:var(--green)"></i> 256-bit SSL &nbsp;|&nbsp; PCI DSS Compliant &nbsp;|&nbsp; Cancel Anytime
+          </div>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="pay-right">
+          <div class="order-box">
+            <h3>Order Summary</h3>
+            <div class="o-plan" id="oPlan">Standard</div>
+            <div class="o-price" id="oPrice">₹499<span>/month</span></div>
+            <div class="o-line"><span>Subtotal</span><span id="oSub">₹499.00</span></div>
+            <div class="o-line"><span>GST (18%)</span><span id="oGst">₹89.82</span></div>
+            <div class="o-line"><span>Discount</span><span style="color:var(--green)" id="oDisc">-₹0.00</span></div>
+            <div class="o-total"><span>Total Today</span><span id="oTotal">₹588.82</span></div>
+            <div class="sec-badge"><i class="fas fa-lock"></i> Secure Payment</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal-bg" id="successModal">
+    <div class="modal-box" style="text-align:center">
+      <div class="modal-body">
+        <div style="font-size:4rem;margin-bottom:16px">🎉</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;margin-bottom:8px">Welcome to VidNova!</div>
+        <p style="color:var(--muted);margin-bottom:6px">Your <strong id="confPlan">Standard</strong> plan is now active.</p>
+        <p style="color:var(--muted);font-size:.82rem;margin-bottom:24px">Order ID: <strong id="confOrderId"></strong></p>
+        <a href="home.html" class="btn-main" style="display:inline-block;padding:13px 36px;text-decoration:none;border-radius:8px;font-weight:700">Start Watching →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let chosen='standard', chosenPrice=499;
+
+    window.onload=()=>{
+      const pre=sessionStorage.getItem('selectedPlan');
+      const prices={basic:149,standard:499,premium:799};
+      if(pre) selectPlan(pre, prices[pre]||499, document.getElementById('pc-'+pre));
+      else updateSummary();
+    };
+
+    function selectPlan(id,price,el){
+      document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('sel'));
+      el?.classList.add('sel');
+      chosen=id; chosenPrice=price;
+      sessionStorage.setItem('selectedPlan',id);
+      sessionStorage.setItem('planPrice',price);
+    }
+
+    function goPayment(){
+      document.getElementById('planScreen').style.display='none';
+      document.getElementById('payScreen').style.display='flex';
+      document.getElementById('step3dot').classList.add('done');
+      document.getElementById('stepLabel').textContent='Step 3 of 3';
+      updateSummary();
+    }
+
+    function updateSummary(){
+      const p=chosenPrice, gst=Math.round(p*.18*100)/100, total=(p+gst).toFixed(2);
+      document.getElementById('oPlan').textContent=chosen.charAt(0).toUpperCase()+chosen.slice(1);
+      document.getElementById('oPrice').innerHTML=`₹${p}<span>/month</span>`;
+      document.getElementById('oSub').textContent=`₹${p}.00`;
+      document.getElementById('oGst').textContent=`₹${gst.toFixed(2)}`;
+      document.getElementById('oTotal').textContent=`₹${total}`;
+      document.getElementById('payBtnTxt').textContent=`Pay ₹${total}`;
+    }
+
+    function payMethod(m){
+      ['card','upi','nb','wlt'].forEach(x=>{
+        document.getElementById('tab-'+x).classList.toggle('on',x===m);
+        document.getElementById('ps-'+x).classList.toggle('on',x===m);
+      });
+    }
+
+    function selUpi(el){ el.closest('.upi-apps').querySelectorAll('.upi-app').forEach(a=>a.classList.remove('on')); el.classList.add('on'); }
+    function fmtCard(i){let v=i.value.replace(/\D/g,'').substring(0,16);i.value=v.replace(/(.{4})/g,'$1  ').trim();}
+    function fmtExp(i){let v=i.value.replace(/\D/g,'').substring(0,4);if(v.length>=2)v=v.substring(0,2)+' / '+v.substring(2);i.value=v;}
+
+    function applyPromo(){
+      const c=document.getElementById('promoCode').value.trim().toUpperCase();
+      const msg=document.getElementById('promoMsg');
+      if(c==='NOVA50'){msg.style.color='var(--green)';msg.textContent='✓ 50% discount applied!';msg.style.display='block';}
+      else if(c==='FIRST'){msg.style.color='var(--green)';msg.textContent='✓ First month FREE!';msg.style.display='block';}
+      else{msg.style.color='#ff4d4d';msg.textContent='✗ Invalid code.';msg.style.display='block';}
+    }
+
+    async function pay(){
+      const btn=document.getElementById('payBtn');
+      btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Processing...'; btn.disabled=true;
+      // Simulate payment + save plan to server
+      await new Promise(r=>setTimeout(r,2000));
+      try{
+        const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:chosen}),credentials:'include'});
+        const d=await r.json();
+        if(d.success){
+          const user=JSON.parse(sessionStorage.getItem('vnUser')||'{}');
+          user.plan=chosen; sessionStorage.setItem('vnUser',JSON.stringify(user));
+          document.getElementById('confPlan').textContent=chosen.charAt(0).toUpperCase()+chosen.slice(1);
+          document.getElementById('confOrderId').textContent='VN'+Date.now();
+          document.getElementById('successModal').classList.add('open');
+        }
+      }catch(e){ alert('Payment error – server may be down.'); btn.innerHTML='<i class="fas fa-lock" style="margin-right:7px"></i>Pay Now'; btn.disabled=false; }
+    }
+  </script>
+</body>
+</html>

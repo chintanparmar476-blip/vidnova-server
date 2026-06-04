@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – Stream Everything</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .lnav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 48px;background:linear-gradient(to bottom,rgba(0,0,0,.9),transparent);}
+    .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#111;}
+    .hero-bg-img{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600') center/cover;opacity:.5;}
+    .hero-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.85) 45%,rgba(0,0,0,.3)),linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 40%);}
+    .hero-content{position:relative;z-index:2;text-align:center;max-width:680px;padding:0 24px;}
+    .hero-content h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,5.5rem);line-height:1.02;letter-spacing:2px;margin-bottom:14px;}
+    .hero-content p{font-size:1.2rem;margin-bottom:6px;}
+    .hero-sub{font-size:.95rem;color:var(--muted);margin-bottom:26px;}
+    .hero-form{display:flex;gap:10px;max-width:520px;margin:0 auto;flex-wrap:wrap;justify-content:center;}
+    .hero-form input{flex:1;min-width:200px;padding:15px 16px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:4px;font-size:.95rem;font-family:'Outfit',sans-serif;}
+    .hero-form input::placeholder{color:#888;}
+    .btn-hero{background:var(--accent);color:#fff;padding:15px 26px;border-radius:4px;font-size:1rem;font-weight:700;white-space:nowrap;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s;}
+    .btn-hero:hover{background:#c1070e;}
+    .feat-section{background:var(--bg);}
+    .feat-item{display:flex;align-items:center;justify-content:center;gap:60px;padding:72px 8%;border-top:8px solid var(--surface2);}
+    .feat-item.rev{flex-direction:row-reverse;}
+    .feat-txt h2{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;margin-bottom:12px;}
+    .feat-txt p{color:var(--muted);font-size:1rem;line-height:1.7;max-width:460px;}
+    .plans-sec{padding:72px 8%;background:var(--surface);text-align:center;}
+    .plans-sec h2{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;margin-bottom:6px;}
+    .plans-sec>p{color:var(--muted);margin-bottom:40px;}
+    .faq-sec{padding:72px 8%;max-width:860px;margin:0 auto;}
+    .faq-sec h2{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;margin-bottom:28px;text-align:center;}
+    .faq-item{background:var(--surface2);margin-bottom:2px;border-radius:4px;cursor:pointer;}
+    .faq-q{padding:18px 22px;font-size:1rem;font-weight:500;display:flex;justify-content:space-between;transition:background .2s;}
+    .faq-q:hover{background:#2a2a3a;}
+    .faq-a{max-height:0;overflow:hidden;padding:0 22px;color:var(--muted);line-height:1.7;font-size:.92rem;transition:max-height .4s,padding .3s;}
+    .faq-item.open .faq-a{max-height:200px;padding:16px 22px;}
+    .faq-item.open .faq-q i{transform:rotate(45deg);}
+    .faq-q i{transition:transform .3s;}
+    .faq-cta{text-align:center;margin-top:40px;font-size:1rem;color:var(--muted);}
+    .faq-cta a{color:var(--accent);font-weight:600;}
+    .land-footer{padding:40px 8%;border-top:1px solid var(--border);background:rgba(0,0,0,.6);}
+    .land-footer p{color:var(--muted);margin-bottom:18px;font-size:.9rem;}
+    .foot-links{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px;}
+    .foot-links a{color:var(--muted);font-size:.8rem;} .foot-links a:hover{text-decoration:underline;}
+    .lang-sel{background:transparent;border:1px solid var(--muted);color:#fff;padding:5px 10px;border-radius:4px;cursor:pointer;}
+    @media(max-width:700px){.lnav{padding:14px 18px;}.feat-item,.feat-item.rev{flex-direction:column;text-align:center;gap:28px;padding:48px 5%;}.hero-form{flex-direction:column;align-items:center;}.hero-form input{min-width:280px;}}
+  </style>
+</head>
+<body>
+  <nav class="lnav">
+    <div class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <select class="lang-sel"><option>EN</option><option>HI</option><option>GU</option></select>
+      <a href="pages/signin.html" style="background:var(--accent);color:#fff;padding:8px 18px;border-radius:4px;font-weight:600;font-size:.9rem">Sign In</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-img"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1>Unlimited Movies &amp; Shows.</h1>
+      <p>Watch anywhere. Cancel anytime.</p>
+      <p class="hero-sub">Enter your email to create or restart your membership.</p>
+      <div class="hero-form">
+        <input type="email" id="heroEmail" placeholder="Your email address"/>
+        <button class="btn-hero" onclick="goSignup()">Get Started &nbsp;›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="feat-section">
+    <div class="feat-item">
+      <div class="feat-txt"><h2>Enjoy on your TV.</h2><p>Watch on Smart TVs, PlayStation, Xbox, Chromecast, Apple TV, Blu-ray players, and more.</p></div>
+      <i class="fas fa-tv" style="font-size:6rem;color:var(--accent);flex-shrink:0"></i>
+    </div>
+    <div class="feat-item rev">
+      <div class="feat-txt"><h2>Download &amp; watch offline.</h2><p>Save your favourites easily and always have something to watch.</p></div>
+      <i class="fas fa-download" style="font-size:6rem;color:var(--accent);flex-shrink:0"></i>
+    </div>
+    <div class="feat-item">
+      <div class="feat-txt"><h2>Watch everywhere.</h2><p>Stream on your phone, tablet, laptop, and TV without missing a beat.</p></div>
+      <i class="fas fa-mobile-screen" style="font-size:6rem;color:var(--accent);flex-shrink:0"></i>
+    </div>
+  </section>
+
+  <!-- PLANS -->
+  <section class="plans-sec">
+    <h2>Choose Your Plan</h2>
+    <p>No contracts. No hidden fees. Cancel anytime.</p>
+    <div class="plan-cards">
+      <div class="plan-card" onclick="goSignup('basic')">
+        <div class="plan-ico">📺</div>
+        <div class="plan-nm">Basic</div>
+        <div class="plan-pr">₹149<span>/mo</span></div>
+        <ul class="plan-feats">
+          <li><i class="fas fa-check ok"></i>HD Video</li>
+          <li><i class="fas fa-check ok"></i>1 Screen</li>
+          <li><i class="fas fa-times no"></i>No Downloads</li>
+        </ul>
+      </div>
+      <div class="plan-card sel" onclick="goSignup('standard')">
+        <div class="plan-pop">POPULAR</div>
+        <div class="plan-ico">🎬</div>
+        <div class="plan-nm">Standard</div>
+        <div class="plan-pr">₹499<span>/mo</span></div>
+        <ul class="plan-feats">
+          <li><i class="fas fa-check ok"></i>Full HD</li>
+          <li><i class="fas fa-check ok"></i>2 Screens</li>
+          <li><i class="fas fa-check ok"></i>Downloads</li>
+        </ul>
+      </div>
+      <div class="plan-card" onclick="goSignup('premium')">
+        <div class="plan-ico">🏆</div>
+        <div class="plan-nm">Premium</div>
+        <div class="plan-pr" style="color:var(--gold)">₹799<span>/mo</span></div>
+        <ul class="plan-feats">
+          <li><i class="fas fa-check ok"></i>4K + HDR</li>
+          <li><i class="fas fa-check ok"></i>4 Screens</li>
+          <li><i class="fas fa-check ok"></i>Downloads</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-sec">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">What is VidNova? <i class="fas fa-plus"></i></div><div class="faq-a">VidNova is a streaming platform offering unlimited movies and shows on any device for a fixed monthly fee.</div></div>
+    <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">How much does it cost? <i class="fas fa-plus"></i></div><div class="faq-a">Plans start at ₹149/month. You can cancel anytime — no contracts, no hidden fees.</div></div>
+    <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">Where can I watch? <i class="fas fa-plus"></i></div><div class="faq-a">Watch on any internet-connected device — phones, tablets, laptops, smart TVs, and more.</div></div>
+    <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">How do I cancel? <i class="fas fa-plus"></i></div><div class="faq-a">Cancel anytime from your Account settings. No hassle, no questions asked.</div></div>
+    <div class="faq-cta">Ready to watch? <a href="pages/signup.html">Sign up now.</a></div>
+  </section>
+
+  <footer class="land-footer">
+    <p>Questions? Call <a href="#" style="color:inherit">1800-XXX-XXXX</a></p>
+    <div class="foot-links">
+      <a href="#">FAQ</a><a href="#">Help Centre</a><a href="#">Account</a><a href="#">Terms of Use</a><a href="#">Privacy</a><a href="#">Contact Us</a>
+    </div>
+    <p style="font-size:.78rem">© 2025 VidNova. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function goSignup(plan) {
+      const email = document.getElementById('heroEmail').value;
+      if (email) sessionStorage.setItem('signupEmail', email);
+      if (plan)  sessionStorage.setItem('selectedPlan', plan);
+      window.location.href = 'pages/signup.html';
+    }
+  </script>
+</body>
+</html>

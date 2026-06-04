@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – Account</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body class="dash-body">
+  <nav class="nav solid">
+    <a href="home.html" class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></a>
+    <div class="nav-links">
+      <a href="home.html">Home</a><a href="movies.html">Movies</a><a href="mylist.html">My List</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-avatar" id="navAv">U
+        <div class="avatar-drop">
+          <a href="profile.html" class="on"><i class="fas fa-user"></i> Profile</a>
+          <div class="sep"></div>
+          <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div style="padding:100px 6% 60px;max-width:820px;margin:0 auto">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;margin-bottom:4px">Account</h1>
+    <p style="color:var(--muted);margin-bottom:32px">Manage your VidNova membership and preferences.</p>
+
+    <!-- Profile card -->
+    <div style="display:flex;align-items:center;gap:20px;background:var(--surface);border-radius:var(--r);padding:24px 28px;margin-bottom:16px;border:1px solid var(--border)">
+      <div style="width:68px;height:68px;background:var(--accent);border-radius:12px;display:flex;align-items:center;
+        justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:2rem;flex-shrink:0" id="bigAv">U</div>
+      <div>
+        <div style="font-size:1.2rem;font-weight:600" id="profileName">Loading...</div>
+        <div style="color:var(--muted);font-size:.88rem" id="profileEmail">—</div>
+        <div style="margin-top:6px"><span class="plan-badge2" id="profilePlan">FREE</span></div>
+      </div>
+    </div>
+
+    <!-- Account details -->
+    <div class="settings-section">
+      <h3>Account Details</h3>
+      <div class="s-row">
+        <div><div class="s-label">Full Name</div><div class="s-val" id="sName">—</div></div>
+        <button class="btn-ch" onclick="editField('name')">Change</button>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Email</div><div class="s-val" id="sEmail">—</div></div>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Password</div><div class="s-val">••••••••</div></div>
+        <button class="btn-ch" onclick="editField('password')">Change</button>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Phone</div><div class="s-val" id="sPhone">Not added</div></div>
+        <button class="btn-ch" onclick="editField('phone')">Add</button>
+      </div>
+    </div>
+
+    <!-- Membership -->
+    <div class="settings-section">
+      <h3>Membership & Billing</h3>
+      <div class="s-row">
+        <div><div class="s-label">Current Plan</div><div class="s-val" id="sPlan">—</div></div>
+        <a href="plan-select.html" class="btn-ch" style="text-decoration:none">Upgrade</a>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Next Billing Date</div><div class="s-val" id="sNextBill">—</div></div>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Payment Method</div><div class="s-val">•••• •••• •••• 4242</div></div>
+        <a href="plan-select.html" class="btn-ch" style="text-decoration:none">Update</a>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label" style="color:#e50914">Cancel Membership</div></div>
+        <button class="btn-ch" style="border-color:#e50914;color:#e50914" onclick="cancelMembership()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Playback -->
+    <div class="settings-section">
+      <h3>Playback Settings</h3>
+      <div class="s-row">
+        <div><div class="s-label">Video Quality</div></div>
+        <select style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:6px 12px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:.85rem">
+          <option>Auto</option><option>Low (480p)</option><option>Medium (720p)</option><option>High (1080p)</option><option>Ultra (4K)</option>
+        </select>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Autoplay Next</div></div>
+        <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)"/>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Subtitle Language</div></div>
+        <select style="background:var(--surface2);border:1px solid var(--border);color:#fff;padding:6px 12px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:.85rem">
+          <option>Off</option><option>English</option><option>Hindi</option><option>Gujarati</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="settings-section">
+      <h3>Notifications</h3>
+      <div class="s-row"><div><div class="s-label">New Releases</div></div><input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)"/></div>
+      <div class="s-row"><div><div class="s-label">Recommendations</div></div><input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)"/></div>
+      <div class="s-row"><div><div class="s-label">Billing Reminders</div></div><input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)"/></div>
+    </div>
+
+    <!-- Danger -->
+    <div class="settings-section" style="border:1px solid rgba(229,9,20,.3)">
+      <h3 style="color:#e50914">Danger Zone</h3>
+      <div class="s-row">
+        <div><div class="s-label">Download My Data</div></div>
+        <button class="btn-ch" onclick="downloadData()">Download</button>
+      </div>
+      <div class="s-row">
+        <div><div class="s-label">Delete Account</div><div class="s-val">This is permanent and cannot be undone.</div></div>
+        <button class="btn-ch" style="border-color:#e50914;color:#e50914" onclick="deleteAccount()">Delete</button>
+      </div>
+    </div>
+
+    <button onclick="signout()" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted);
+      padding:11px 28px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.9rem">
+      <i class="fas fa-sign-out-alt"></i> &nbsp;Sign Out of VidNova
+    </button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentUser = null;
+
+    window.onload = async () => {
+      try {
+        const r = await fetch('/api/me', { credentials: 'include' });
+        if (!r.ok) { window.location.href = 'signin.html'; return; }
+        const d = await r.json();
+        currentUser = d.user;
+        renderProfile();
+      } catch(e) { window.location.href = 'signin.html'; }
+    };
+
+    function renderProfile() {
+      const u = currentUser;
+      const initial = (u.name || 'U')[0].toUpperCase();
+      document.getElementById('navAv').innerHTML = initial + document.getElementById('navAv').querySelector('.avatar-drop').outerHTML;
+      document.getElementById('bigAv').textContent = initial;
+      document.getElementById('profileName').textContent = u.name || '—';
+      document.getElementById('profileEmail').textContent = u.email || '—';
+      document.getElementById('profilePlan').textContent = (u.plan || 'FREE').toUpperCase();
+      document.getElementById('sName').textContent = u.name || '—';
+      document.getElementById('sEmail').textContent = u.email || '—';
+      const planPrices = { basic: 'Basic – ₹149/month', standard: 'Standard – ₹499/month', premium: 'Premium – ₹799/month' };
+      document.getElementById('sPlan').textContent = planPrices[u.plan] || 'No active plan';
+      const next = new Date(); next.setMonth(next.getMonth() + 1);
+      document.getElementById('sNextBill').textContent = next.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    async function editField(field) {
+      const val = prompt(`Enter new ${field}:`);
+      if (!val?.trim()) return;
+      try {
+        const body = {};
+        if (field === 'name') body.name = val.trim();
+        if (field === 'phone') body.phone = val.trim();
+        const r = await fetch('/api/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'include' });
+        if (r.ok) {
+          if (field === 'name') { currentUser.name = val.trim(); renderProfile(); }
+          showToast(`${field.charAt(0).toUpperCase() + field.slice(1)} updated ✓`, true);
+        }
+      } catch(e) { showToast('Update failed', false); }
+    }
+
+    function cancelMembership() {
+      if (confirm('Cancel your membership?\nYou will lose access at the end of your billing period.'))
+        showToast('Membership cancellation scheduled.', true);
+    }
+
+    function downloadData() {
+      const data = { user: currentUser, myList: JSON.parse(localStorage.getItem('vnMyList') || '[]'), exportedAt: new Date().toISOString() };
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+      a.download = 'vidnova-data.json'; a.click();
+    }
+
+    async function deleteAccount() {
+      if (!confirm('DELETE ACCOUNT?\nThis is permanent and cannot be undone.')) return;
+      await fetch('/api/signout', { method: 'POST', credentials: 'include' });
+      localStorage.clear(); window.location.href = '../index.html';
+    }
+
+    async function signout() { await fetch('/api/signout', { method: 'POST', credentials: 'include' }); window.location.href = '../index.html'; }
+    function showToast(msg, ok = true) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show' + (ok ? ' ok' : ''); setTimeout(() => t.classList.remove('show'), 3000); }
+  </script>
+</body>
+</html>

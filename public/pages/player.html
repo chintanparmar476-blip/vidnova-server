@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova Player</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#000;overflow:hidden;font-family:'Outfit',sans-serif;}
+    .pw{position:fixed;inset:0;background:#000;}
+    video{width:100%;height:100%;object-fit:contain;display:block;}
+    .ui{position:absolute;inset:0;opacity:0;transition:opacity .3s;pointer-events:none;}
+    .ui.vis{opacity:1;pointer-events:all;}
+    /* top bar */
+    .top-bar{position:absolute;top:0;left:0;right:0;padding:20px 32px;
+      background:linear-gradient(to bottom,rgba(0,0,0,.9),transparent);
+      display:flex;align-items:center;justify-content:space-between;}
+    .back-btn{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.85);
+      font-size:.9rem;background:rgba(0,0,0,.45);padding:7px 14px;border-radius:6px;text-decoration:none;transition:all .2s;}
+    .back-btn:hover{color:#fff;background:rgba(0,0,0,.75);}
+    .now-playing{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;
+      position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;overflow:hidden;max-width:50%;text-overflow:ellipsis;}
+    .quality-pill{font-size:.72rem;border:1px solid rgba(255,255,255,.4);
+      color:rgba(255,255,255,.8);padding:3px 9px;border-radius:4px;}
+    /* center controls */
+    .center-ctrls{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      display:flex;gap:28px;align-items:center;}
+    .c-btn{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:50%;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(4px);transition:all .2s;}
+    .c-btn:hover{background:rgba(255,255,255,.26);transform:scale(1.08);}
+    .c-btn.sm{width:54px;height:54px;font-size:1.3rem;}
+    .c-btn.lg{width:76px;height:76px;font-size:2rem;background:rgba(255,255,255,.18);}
+    /* skip label */
+    .skip-lbl{font-size:.65rem;display:block;margin-top:2px;text-align:center;}
+    /* bottom bar */
+    .bottom-bar{position:absolute;bottom:0;left:0;right:0;
+      background:linear-gradient(to top,rgba(0,0,0,.95),transparent);
+      padding:48px 32px 22px;}
+    .seek-wrap{height:5px;background:rgba(255,255,255,.25);border-radius:3px;
+      margin-bottom:14px;cursor:pointer;position:relative;transition:height .15s;}
+    .seek-wrap:hover{height:7px;}
+    .seek-buf{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,.2);border-radius:3px;width:0%;}
+    .seek-fill{position:absolute;top:0;left:0;height:100%;background:var(--accent);border-radius:3px;width:0%;pointer-events:none;}
+    .seek-dot{position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);
+      width:14px;height:14px;background:#fff;border-radius:50%;opacity:0;transition:opacity .2s;pointer-events:none;}
+    .seek-wrap:hover .seek-dot{opacity:1;}
+    .ctrl-row{display:flex;align-items:center;gap:14px;}
+    .ctrl-btn{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;
+      padding:3px;transition:color .2s,transform .15s;}
+    .ctrl-btn:hover{color:var(--accent);transform:scale(1.12);}
+    .vol-wrap{display:flex;align-items:center;gap:8px;}
+    .vol-sl{-webkit-appearance:none;width:80px;height:4px;border-radius:2px;
+      background:rgba(255,255,255,.3);outline:none;cursor:pointer;}
+    .vol-sl::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+      border-radius:50%;background:#fff;cursor:pointer;}
+    .time-lbl{font-size:.8rem;color:rgba(255,255,255,.75);white-space:nowrap;}
+    .r-ctrls{margin-left:auto;display:flex;gap:12px;align-items:center;}
+    /* subtitle */
+    .sub-bar{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;}
+    .sub-txt{background:rgba(0,0,0,.72);color:#fff;padding:5px 14px;border-radius:4px;
+      font-size:1rem;display:none;white-space:nowrap;}
+    /* buffering spinner */
+    .buf-spin{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:none;}
+    .buf-spin .spinner{width:52px;height:52px;}
+  </style>
+</head>
+<body class="player-body">
+<div class="pw" id="pw" onmousemove="showUI()" onclick="handleClick(event)">
+  <video id="vid" preload="metadata"></video>
+
+  <div class="buf-spin" id="bufSpin"><div class="spinner"></div></div>
+
+  <div class="ui" id="ui">
+    <!-- TOP -->
+    <div class="top-bar">
+      <a href="home.html" class="back-btn" onclick="event.stopPropagation()">
+        <i class="fas fa-arrow-left"></i> Back to Browse
+      </a>
+      <div class="now-playing" id="nowPlaying">Loading...</div>
+      <div class="quality-pill" id="qPill">HD</div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center-ctrls" onclick="event.stopPropagation()">
+      <button class="c-btn sm" onclick="skip(-10)" title="Rewind 10s">
+        <div><i class="fas fa-undo"></i><span class="skip-lbl">10</span></div>
+      </button>
+      <button class="c-btn lg" id="bigPlayBtn" onclick="togglePlay()">
+        <i class="fas fa-play" id="bigIcon"></i>
+      </button>
+      <button class="c-btn sm" onclick="skip(10)" title="Forward 10s">
+        <div><i class="fas fa-redo"></i><span class="skip-lbl">10</span></div>
+      </button>
+    </div>
+
+    <!-- SUBTITLE -->
+    <div class="sub-bar"><div class="sub-txt" id="subTxt"></div></div>
+
+    <!-- BOTTOM -->
+    <div class="bottom-bar" onclick="event.stopPropagation()">
+      <div class="seek-wrap" id="seekWrap" onclick="seek(event)" onmousemove="previewSeek(event)">
+        <div class="seek-buf" id="seekBuf"></div>
+        <div class="seek-fill" id="seekFill"></div>
+        <div class="seek-dot" id="seekDot"></div>
+      </div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="togglePlay()" id="ctrlPlayBtn"><i class="fas fa-play" id="ctrlIcon"></i></button>
+        <button class="ctrl-btn" onclick="skip(-10)"><i class="fas fa-undo"></i></button>
+        <button class="ctrl-btn" onclick="skip(10)"><i class="fas fa-redo"></i></button>
+        <div class="vol-wrap">
+          <button class="ctrl-btn" onclick="toggleMute()" id="muteBtn"><i class="fas fa-volume-up" id="volIcon"></i></button>
+          <input type="range" class="vol-sl" id="volSl" min="0" max="1" step="0.02" value="1" oninput="setVol(this.value)" onclick="event.stopPropagation()"/>
+        </div>
+        <span class="time-lbl" id="timeLbl">0:00 / 0:00</span>
+        <div class="r-ctrls">
+          <button class="ctrl-btn" onclick="toggleSubs()" title="Subtitles" id="subBtn"><i class="fas fa-closed-captioning"></i></button>
+          <button class="ctrl-btn" onclick="togglePip()" title="Picture in Picture"><i class="fas fa-external-link-alt"></i></button>
+          <button class="ctrl-btn" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand" id="fsIcon"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const vid = document.getElementById('vid');
+  let uiTimer, subsOn = false, isDragging = false;
+
+  // ── Init ──────────────────────────────────────────────────
+  window.onload = async () => {
+    // Auth check
+    try {
+      const r = await fetch('/api/me', { credentials: 'include' });
+      if (!r.ok) { window.location.href = 'signin.html'; return; }
+      const d = await r.json();
+      const qualMap = { basic: 'HD', standard: 'Full HD', premium: '4K' };
+      document.getElementById('qPill').textContent = qualMap[d.user.plan] || 'HD';
+    } catch(e) { window.location.href = 'signin.html'; return; }
+
+    const m = JSON.parse(sessionStorage.getItem('currentMovie') || '{}');
+    if (!m.id) { window.location.href = 'home.html'; return; }
+
+    document.title = m.title + ' – VidNova';
+    document.getElementById('nowPlaying').textContent = m.title;
+
+    // Set video source to server stream endpoint
+    vid.src = `/api/stream/${m.id}`;
+    vid.load();
+    vid.play().catch(() => {});
+    showUI();
+  };
+
+  // ── Video events ──────────────────────────────────────────
+  vid.addEventListener('play',    () => setPlayIcon(true));
+  vid.addEventListener('pause',   () => setPlayIcon(false));
+  vid.addEventListener('waiting', () => document.getElementById('bufSpin').style.display = 'block');
+  vid.addEventListener('playing', () => document.getElementById('bufSpin').style.display = 'none');
+  vid.addEventListener('canplay', () => document.getElementById('bufSpin').style.display = 'none');
+
+  vid.addEventListener('timeupdate', () => {
+    if (!vid.duration || isDragging) return;
+    const pct = (vid.currentTime / vid.duration) * 100;
+    document.getElementById('seekFill').style.width = pct + '%';
+    document.getElementById('seekDot').style.left   = pct + '%';
+    document.getElementById('timeLbl').textContent = fmt(vid.currentTime) + ' / ' + fmt(vid.duration);
+  });
+
+  vid.addEventListener('progress', () => {
+    if (!vid.buffered.length || !vid.duration) return;
+    const pct = (vid.buffered.end(vid.buffered.length - 1) / vid.duration) * 100;
+    document.getElementById('seekBuf').style.width = pct + '%';
+  });
+
+  vid.addEventListener('ended', () => {
+    setPlayIcon(false);
+    showUI();
+  });
+
+  // ── Controls ──────────────────────────────────────────────
+  function togglePlay() { vid.paused ? vid.play() : vid.pause(); }
+
+  function setPlayIcon(playing) {
+    [document.getElementById('bigIcon'), document.getElementById('ctrlIcon')].forEach(i => {
+      i.className = playing ? 'fas fa-pause' : 'fas fa-play';
+    });
+  }
+
+  function skip(s) { vid.currentTime = Math.max(0, Math.min(vid.duration || 0, vid.currentTime + s)); }
+
+  function seek(e) {
+    const rect = document.getElementById('seekWrap').getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    vid.currentTime = pct * (vid.duration || 0);
+  }
+
+  function previewSeek(e) {
+    const rect = document.getElementById('seekWrap').getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    document.getElementById('seekDot').style.left = (pct * 100) + '%';
+  }
+
+  function toggleMute() {
+    vid.muted = !vid.muted;
+    document.getElementById('volIcon').className = vid.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+    document.getElementById('volSl').value = vid.muted ? 0 : vid.volume;
+  }
+
+  function setVol(v) {
+    vid.volume = v; vid.muted = v == 0;
+    document.getElementById('volIcon').className = v == 0 ? 'fas fa-volume-mute' : v < 0.5 ? 'fas fa-volume-down' : 'fas fa-volume-up';
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.getElementById('pw').requestFullscreen();
+      document.getElementById('fsIcon').className = 'fas fa-compress';
+    } else {
+      document.exitFullscreen();
+      document.getElementById('fsIcon').className = 'fas fa-expand';
+    }
+  }
+
+  function toggleSubs() {
+    subsOn = !subsOn;
+    const st = document.getElementById('subTxt');
+    const btn = document.getElementById('subBtn');
+    st.style.display = subsOn ? 'block' : 'none';
+    btn.style.color   = subsOn ? 'var(--accent)' : '#fff';
+    if (subsOn) st.textContent = '[ Subtitles – English ]';
+  }
+
+  async function togglePip() {
+    try {
+      if (document.pictureInPictureElement) await document.exitPictureInPicture();
+      else await vid.requestPictureInPicture();
+    } catch(e) {}
+  }
+
+  // ── UI show/hide ──────────────────────────────────────────
+  function showUI() {
+    document.getElementById('ui').classList.add('vis');
+    clearTimeout(uiTimer);
+    uiTimer = setTimeout(() => {
+      if (!vid.paused) document.getElementById('ui').classList.remove('vis');
+    }, 3500);
+  }
+
+  function handleClick(e) {
+    if (e.target === document.getElementById('pw') || e.target === vid) togglePlay();
+  }
+
+  // ── Keyboard shortcuts ────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if (e.code === 'Space')       { e.preventDefault(); togglePlay(); }
+    if (e.code === 'ArrowLeft')   skip(-10);
+    if (e.code === 'ArrowRight')  skip(10);
+    if (e.code === 'ArrowUp')     { vid.volume = Math.min(1, vid.volume + 0.1); document.getElementById('volSl').value = vid.volume; }
+    if (e.code === 'ArrowDown')   { vid.volume = Math.max(0, vid.volume - 0.1); document.getElementById('volSl').value = vid.volume; }
+    if (e.code === 'KeyF')        toggleFullscreen();
+    if (e.code === 'KeyM')        toggleMute();
+    showUI();
+  });
+
+  // ── Helpers ───────────────────────────────────────────────
+  function fmt(s) {
+    if (!s || isNaN(s)) return '0:00';
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    return `${m}:${String(sec).padStart(2,'0')}`;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – Movies</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body class="dash-body">
+  <nav class="nav solid">
+    <a href="home.html" class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></a>
+    <div class="nav-links">
+      <a href="home.html">Home</a><a href="movies.html" class="on">Movies</a><a href="mylist.html">My List</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrap">
+        <input type="text" placeholder="Search movies..." oninput="doSearch(this.value)" id="searchInp"/>
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="nav-avatar" id="navAv">U
+        <div class="avatar-drop">
+          <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+          <a href="mylist.html"><i class="fas fa-bookmark"></i> My List</a>
+          <div class="sep"></div>
+          <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head" style="margin-bottom:0">
+    <div>
+      <h1>Movies</h1>
+      <p id="countLbl">Loading...</p>
+    </div>
+    <select class="sort-sel" onchange="sortMovies(this.value)">
+      <option value="views">Most Watched</option>
+      <option value="rating">Highest Rated</option>
+      <option value="newest">Newest First</option>
+      <option value="az">A – Z</option>
+    </select>
+  </div>
+
+  <div class="filter-bar" id="genreFilter">
+    <button class="f-btn on" onclick="filterGenre('',this)">All</button>
+    <button class="f-btn" onclick="filterGenre('Action',this)">Action</button>
+    <button class="f-btn" onclick="filterGenre('Drama',this)">Drama</button>
+    <button class="f-btn" onclick="filterGenre('Comedy',this)">Comedy</button>
+    <button class="f-btn" onclick="filterGenre('Thriller',this)">Thriller</button>
+    <button class="f-btn" onclick="filterGenre('Sci-Fi',this)">Sci-Fi</button>
+    <button class="f-btn" onclick="filterGenre('Horror',this)">Horror</button>
+    <button class="f-btn" onclick="filterGenre('Romance',this)">Romance</button>
+    <button class="f-btn" onclick="filterGenre('Adventure',this)">Adventure</button>
+    <button class="f-btn" onclick="filterGenre('Documentary',this)">Documentary</button>
+    <button class="f-btn" onclick="filterGenre('Animation',this)">Animation</button>
+    <button class="f-btn" onclick="filterGenre('Crime',this)">Crime</button>
+    <button class="f-btn" onclick="filterGenre('Family',this)">Family</button>
+  </div>
+
+  <div class="page-grid" id="moviesGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:80px 0"><div class="spinner"></div></div>
+  </div>
+
+  <div class="empty-st" id="emptyState" style="display:none">
+    <i class="fas fa-film"></i>
+    <h3>No Movies Found</h3>
+    <p>Try a different genre or search term.</p>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-bg" id="infoModal" onclick="this.classList.remove('open')">
+    <div class="modal-box" onclick="event.stopPropagation()" style="position:relative">
+      <button class="modal-close-btn" onclick="document.getElementById('infoModal').classList.remove('open')"><i class="fas fa-times"></i></button>
+      <img class="modal-img" id="mImg" src="" alt=""/>
+      <div class="modal-body">
+        <div class="modal-title2" id="mTitle"></div>
+        <div class="modal-meta">
+          <span class="rat" id="mRat"></span><span id="mYear"></span>
+          <span id="mGenre"></span><span class="tag" id="mAge"></span><span id="mDur"></span>
+        </div>
+        <p class="modal-desc" id="mDesc"></p>
+        <p class="modal-cast" id="mCast"></p>
+        <div class="modal-actions">
+          <button class="btn-play2" onclick="playFromModal()" style="font-size:.9rem;padding:10px 22px"><i class="fas fa-play"></i> Play</button>
+          <button class="btn-more2" onclick="addListFromModal()" style="font-size:.9rem;padding:10px 18px"><i class="fas fa-plus"></i> My List</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let allMovies=[], filtered=[], activeGenre='', activeSort='views';
+    let myList=JSON.parse(localStorage.getItem('vnMyList')||'[]');
+    let currentModal=null;
+
+    window.onload=async()=>{
+      try{
+        const r=await fetch('/api/me',{credentials:'include'});
+        if(!r.ok){window.location.href='signin.html';return;}
+        const d=await r.json();
+        document.getElementById('navAv').innerHTML=(d.user.name||'U')[0].toUpperCase()+document.getElementById('navAv').querySelector('.avatar-drop').outerHTML;
+      }catch(e){window.location.href='signin.html';return;}
+      await loadMovies();
+    };
+
+    async function loadMovies(){
+      try{
+        const r=await fetch('/api/movies',{credentials:'include'});
+        allMovies=await r.json();
+      }catch(e){allMovies=[];}
+      applyFilters();
+    }
+
+    function applyFilters(){
+      const q=document.getElementById('searchInp').value.toLowerCase();
+      filtered=allMovies.filter(m=>{
+        const gOk=!activeGenre||m.genre===activeGenre;
+        const qOk=!q||m.title.toLowerCase().includes(q)||m.genre.toLowerCase().includes(q)||(m.cast||[]).some(c=>c.toLowerCase().includes(q));
+        return gOk&&qOk;
+      });
+      if(activeSort==='rating') filtered=[...filtered].sort((a,b)=>b.rating-a.rating);
+      else if(activeSort==='newest') filtered=[...filtered].sort((a,b)=>new Date(b.uploadedAt)-new Date(a.uploadedAt));
+      else if(activeSort==='az') filtered=[...filtered].sort((a,b)=>a.title.localeCompare(b.title));
+      else filtered=[...filtered].sort((a,b)=>(b.views||0)-(a.views||0));
+      renderGrid();
+    }
+
+    function renderGrid(){
+      const grid=document.getElementById('moviesGrid');
+      document.getElementById('emptyState').style.display=filtered.length?'none':'block';
+      document.getElementById('countLbl').textContent=`${filtered.length} title${filtered.length!==1?'s':''}`;
+      if(!filtered.length){grid.innerHTML='';return;}
+      grid.innerHTML=filtered.map(m=>{
+        const thumb=m.thumbnailUrl||`https://picsum.photos/seed/${m.id}/180/260`;
+        return `<div class="mcard" onclick="openModal('${m.id}')" style="width:100%">
+          <img src="${thumb}" alt="${m.title}" loading="lazy" onerror="this.src='https://picsum.photos/seed/${m.id}/180/260'"/>
+          <div class="mcard-info">
+            <div class="mcard-title">${m.title}</div>
+            <div class="mcard-meta">${m.genre} • ${m.year} • ⭐${m.rating||'—'}</div>
+          </div>
+          <div class="mcard-overlay">
+            <div class="ov-play" onclick="event.stopPropagation();playMovie('${m.id}')"><i class="fas fa-play"></i></div>
+            <div class="ov-btns">
+              <div class="ov-btn" onclick="event.stopPropagation();addList('${m.id}')"><i class="fas fa-plus"></i></div>
+              <div class="ov-btn" onclick="event.stopPropagation();openModal('${m.id}')"><i class="fas fa-info"></i></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function filterGenre(g,btn){
+      activeGenre=g;
+      document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      applyFilters();
+    }
+    function sortMovies(v){activeSort=v;applyFilters();}
+    function doSearch(){applyFilters();}
+
+    function openModal(id){
+      const m=allMovies.find(x=>x.id===id);if(!m)return;
+      currentModal=m;
+      document.getElementById('mImg').src=m.thumbnailUrl||`https://picsum.photos/seed/${m.id}/580/260`;
+      document.getElementById('mImg').onerror=function(){this.src=`https://picsum.photos/seed/${m.id}/580/260`;};
+      document.getElementById('mTitle').textContent=m.title;
+      document.getElementById('mRat').textContent=`⭐ ${m.rating||'—'}`;
+      document.getElementById('mYear').textContent=m.year;
+      document.getElementById('mGenre').textContent=m.genre;
+      document.getElementById('mAge').textContent=m.age||'U/A';
+      document.getElementById('mDur').textContent=m.duration?m.duration+' min':'';
+      document.getElementById('mDesc').textContent=m.description;
+      document.getElementById('mCast').innerHTML=m.cast?.length?`<strong>Cast:</strong> ${m.cast.join(', ')}`:'';
+      document.getElementById('infoModal').classList.add('open');
+    }
+
+    function playFromModal(){if(currentModal){document.getElementById('infoModal').classList.remove('open');playMovie(currentModal.id);}}
+    function playMovie(id){const m=allMovies.find(x=>x.id===id);if(m){sessionStorage.setItem('currentMovie',JSON.stringify(m));window.location.href='player.html';}}
+    function addList(id){const m=allMovies.find(x=>x.id===id);if(!m)return;if(!myList.find(x=>x.id===id)){myList.push(m);localStorage.setItem('vnMyList',JSON.stringify(myList));}showToast(`"${m.title}" added to My List ✓`,true);}
+    function addListFromModal(){if(currentModal)addList(currentModal.id);}
+    async function signout(){await fetch('/api/signout',{method:'POST',credentials:'include'});window.location.href='../index.html';}
+    function showToast(msg,ok=true){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(ok?' ok':'');setTimeout(()=>t.classList.remove('show'),3000);}
+  </script>
+</body>
+</html>

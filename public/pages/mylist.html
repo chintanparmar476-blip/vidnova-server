@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – My List</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .remove-btn{position:absolute;top:7px;right:7px;background:rgba(229,9,20,.85);color:#fff;
+      border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.7rem;
+      display:none;align-items:center;justify-content:center;z-index:10;}
+    .mcard:hover .remove-btn{display:flex;}
+  </style>
+</head>
+<body class="dash-body">
+  <nav class="nav solid">
+    <a href="home.html" class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></a>
+    <div class="nav-links">
+      <a href="home.html">Home</a><a href="movies.html">Movies</a><a href="mylist.html" class="on">My List</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-avatar" id="navAv">U
+        <div class="avatar-drop">
+          <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+          <div class="sep"></div>
+          <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <div>
+      <h1>My List</h1>
+      <p id="countLbl">0 titles saved</p>
+    </div>
+    <button onclick="clearAll()" id="clearBtn" style="display:none;background:transparent;border:1px solid var(--border);
+      color:var(--muted);padding:9px 18px;border-radius:6px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem">
+      <i class="fas fa-trash"></i> Clear All
+    </button>
+  </div>
+
+  <div class="empty-st" id="emptyState" style="padding-top:60px">
+    <i class="fas fa-bookmark"></i>
+    <h3>Your list is empty</h3>
+    <p>Add movies from the Home or Movies page.</p>
+    <a href="movies.html" style="display:inline-block;margin-top:20px;background:var(--accent);color:#fff;
+      padding:11px 28px;border-radius:6px;font-weight:700;font-size:.95rem">Browse Movies</a>
+  </div>
+
+  <div class="page-grid" id="listGrid" style="display:none"></div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let myList = JSON.parse(localStorage.getItem('vnMyList') || '[]');
+
+    window.onload = async () => {
+      try {
+        const r = await fetch('/api/me', { credentials: 'include' });
+        if (!r.ok) { window.location.href = 'signin.html'; return; }
+        const d = await r.json();
+        document.getElementById('navAv').innerHTML = (d.user.name || 'U')[0].toUpperCase() + document.getElementById('navAv').querySelector('.avatar-drop').outerHTML;
+      } catch(e) { window.location.href = 'signin.html'; return; }
+      render();
+    };
+
+    function render() {
+      const countLbl = document.getElementById('countLbl');
+      const emptyState = document.getElementById('emptyState');
+      const grid = document.getElementById('listGrid');
+      const clearBtn = document.getElementById('clearBtn');
+
+      countLbl.textContent = `${myList.length} title${myList.length !== 1 ? 's' : ''} saved`;
+
+      if (!myList.length) {
+        emptyState.style.display = 'block';
+        grid.style.display = 'none';
+        clearBtn.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      grid.style.display = 'grid';
+      clearBtn.style.display = 'block';
+
+      grid.innerHTML = myList.map(m => {
+        const thumb = m.thumbnailUrl || `https://picsum.photos/seed/${m.id}/180/260`;
+        return `<div class="mcard" style="width:100%">
+          <button class="remove-btn" onclick="removeItem('${m.id}')"><i class="fas fa-times"></i></button>
+          <img src="${thumb}" alt="${m.title}" loading="lazy" onerror="this.src='https://picsum.photos/seed/${m.id}/180/260'"
+            onclick="playMovie('${m.id}')"/>
+          <div class="mcard-info">
+            <div class="mcard-title">${m.title}</div>
+            <div class="mcard-meta">${m.genre} • ${m.year} • ⭐${m.rating || '—'}</div>
+          </div>
+          <div class="mcard-overlay">
+            <div class="ov-play" onclick="playMovie('${m.id}')"><i class="fas fa-play"></i></div>
+            <div class="ov-btns">
+              <div class="ov-btn" onclick="removeItem('${m.id}')" title="Remove"><i class="fas fa-trash"></i></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function removeItem(id) {
+      myList = myList.filter(m => m.id !== id);
+      localStorage.setItem('vnMyList', JSON.stringify(myList));
+      render();
+      showToast('Removed from My List');
+    }
+
+    function clearAll() {
+      if (!confirm('Clear your entire watchlist?')) return;
+      myList = [];
+      localStorage.setItem('vnMyList', JSON.stringify(myList));
+      render();
+      showToast('Watchlist cleared');
+    }
+
+    function playMovie(id) {
+      const m = myList.find(x => x.id === id);
+      if (m) { sessionStorage.setItem('currentMovie', JSON.stringify(m)); window.location.href = 'player.html'; }
+    }
+
+    async function signout() { await fetch('/api/signout', { method: 'POST', credentials: 'include' }); window.location.href = '../index.html'; }
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show'; setTimeout(() => t.classList.remove('show'), 3000); }
+  </script>
+</body>
+</html>

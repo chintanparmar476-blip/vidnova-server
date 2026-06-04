@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – Home</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body class="dash-body">
+
+  <!-- LOADING -->
+  <div class="loading-screen" id="loadScreen">
+    <div class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></div>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav" id="mainNav">
+    <a href="home.html" class="logo"><span class="logo-v">VID</span><span class="logo-n">NOVA</span></a>
+    <div class="nav-links">
+      <a href="home.html" class="on">Home</a>
+      <a href="movies.html">Movies</a>
+      <a href="mylist.html">My List</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrap">
+        <input type="text" placeholder="Search..." oninput="liveSearch(this.value)" id="searchInp"/>
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="nav-avatar" id="navAv">U
+        <div class="avatar-drop">
+          <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+          <a href="mylist.html"><i class="fas fa-bookmark"></i> My List</a>
+          <div class="sep"></div>
+          <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero-banner" id="heroBanner">
+    <div class="hero-bg" id="heroBg" style="background:#111"></div>
+    <div class="hero-info">
+      <div class="hero-badge2" id="heroBadge">FEATURED</div>
+      <h1 class="hero-title2" id="heroTitle">Loading...</h1>
+      <div class="hero-meta2">
+        <span class="rat" id="heroRat"></span>
+        <span id="heroYear"></span>
+        <span id="heroGenre"></span>
+        <span style="border:1px solid rgba(255,255,255,.3);padding:1px 7px;border-radius:4px" id="heroAge"></span>
+      </div>
+      <p class="hero-desc2" id="heroDesc"></p>
+      <div class="hero-btns2">
+        <button class="btn-play2" onclick="playHero()"><i class="fas fa-play"></i> Play</button>
+        <button class="btn-more2" onclick="openModal(heroMovieId)"><i class="fas fa-info-circle"></i> More Info</button>
+        <button class="btn-more2" onclick="addList(heroMovieId)"><i class="fas fa-plus"></i> My List</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH RESULTS -->
+  <div id="searchSection" style="display:none;padding:100px 4% 20px">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;margin-bottom:16px">Search Results</h2>
+    <div class="page-grid" id="searchGrid"></div>
+  </div>
+
+  <!-- ROWS -->
+  <section class="rows-wrap" id="rowsSection">
+    <div class="row-section"><div class="row-hd">🔥 Trending Now <a href="movies.html">See all</a></div><div class="movies-track" id="rowTrending"></div></div>
+    <div class="row-section"><div class="row-hd">🎬 New Releases <a href="movies.html">See all</a></div><div class="movies-track" id="rowNew"></div></div>
+    <div class="row-section"><div class="row-hd">⭐ Top Rated <a href="movies.html">See all</a></div><div class="movies-track" id="rowTop"></div></div>
+    <div class="row-section" id="rowMyListSec" style="display:none"><div class="row-hd">📌 My List <a href="mylist.html">View all</a></div><div class="movies-track" id="rowMyList"></div></div>
+  </section>
+
+  <!-- NO MOVIES EMPTY STATE -->
+  <div class="empty-st" id="emptyMovies" style="display:none;padding-top:120px">
+    <i class="fas fa-film"></i>
+    <h3>No Movies Yet</h3>
+    <p>The admin hasn't uploaded any movies yet. Check back soon!</p>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-bg" id="infoModal" onclick="this.classList.remove('open')">
+    <div class="modal-box" onclick="event.stopPropagation()" style="position:relative">
+      <button class="modal-close-btn" onclick="document.getElementById('infoModal').classList.remove('open')"><i class="fas fa-times"></i></button>
+      <img class="modal-img" id="mImg" src="" alt=""/>
+      <div class="modal-body">
+        <div class="modal-title2" id="mTitle"></div>
+        <div class="modal-meta">
+          <span class="rat" id="mRat"></span>
+          <span id="mYear"></span>
+          <span id="mGenre"></span>
+          <span class="tag" id="mAge"></span>
+          <span id="mDur"></span>
+        </div>
+        <p class="modal-desc" id="mDesc"></p>
+        <p class="modal-cast" id="mCast"></p>
+        <div class="modal-actions">
+          <button class="btn-play2" onclick="playFromModal()" style="font-size:.9rem;padding:10px 22px"><i class="fas fa-play"></i> Play</button>
+          <button class="btn-more2" onclick="addListFromModal()" style="font-size:.9rem;padding:10px 18px"><i class="fas fa-plus"></i> My List</button>
+          <button class="btn-more2" onclick="shareMovie()" style="font-size:.9rem;padding:10px 18px"><i class="fas fa-share-alt"></i> Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let allMovies=[], heroMovieId=null, heroIdx=0, heroTimer;
+    let myList = JSON.parse(localStorage.getItem('vnMyList')||'[]');
+    let currentModalMovie = null;
+
+    window.onload=async()=>{
+      // Auth check
+      try{
+        const r=await fetch('/api/me',{credentials:'include'});
+        if(!r.ok){ window.location.href='signin.html'; return; }
+        const d=await r.json();
+        document.getElementById('navAv').innerHTML=(d.user.name||'U')[0].toUpperCase()+`<div class="avatar-drop">
+          <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+          <a href="mylist.html"><i class="fas fa-bookmark"></i> My List</a>
+          <div class="sep"></div>
+          <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>`;
+        if(!d.user.plan){ window.location.href='plan-select.html'; return; }
+      }catch(e){ window.location.href='signin.html'; return; }
+
+      await loadMovies();
+      document.getElementById('loadScreen').style.display='none';
+
+      window.addEventListener('scroll',()=>document.getElementById('mainNav').classList.toggle('solid',scrollY>60));
+    };
+
+    async function loadMovies(){
+      try{
+        const r=await fetch('/api/movies',{credentials:'include'});
+        allMovies=await r.json();
+      }catch(e){ allMovies=[]; }
+
+      if(!allMovies.length){
+        document.getElementById('heroBanner').style.display='none';
+        document.getElementById('rowsSection').style.display='none';
+        document.getElementById('emptyMovies').style.display='block';
+        return;
+      }
+
+      // Hero
+      const featured=[...allMovies].sort((a,b)=>b.views-a.views);
+      setHero(featured[0]);
+      if(featured.length>1){ heroTimer=setInterval(()=>{ heroIdx=(heroIdx+1)%Math.min(featured.length,5); setHero(featured[heroIdx]); },7000); }
+
+      // Rows
+      buildRow('rowTrending', [...allMovies].sort((a,b)=>b.views-a.views));
+      buildRow('rowNew',      [...allMovies].sort((a,b)=>new Date(b.uploadedAt)-new Date(a.uploadedAt)));
+      buildRow('rowTop',      [...allMovies].sort((a,b)=>b.rating-a.rating));
+
+      // My list
+      if(myList.length){
+        document.getElementById('rowMyListSec').style.display='block';
+        buildRow('rowMyList', myList);
+      }
+    }
+
+    function setHero(m){
+      if(!m)return;
+      heroMovieId=m.id;
+      document.getElementById('heroBg').style.background=`url('${m.thumbnailUrl}') center/cover`;
+      document.getElementById('heroTitle').textContent=m.title;
+      document.getElementById('heroBadge').textContent=m.genre.toUpperCase();
+      document.getElementById('heroRat').textContent=`⭐ ${m.rating||'?'}`;
+      document.getElementById('heroYear').textContent=m.year;
+      document.getElementById('heroGenre').textContent=m.genre;
+      document.getElementById('heroAge').textContent=m.age||'U/A';
+      document.getElementById('heroDesc').textContent=m.description;
+    }
+
+    function buildRow(containerId, movies){
+      document.getElementById(containerId).innerHTML=movies.slice(0,15).map(m=>card(m)).join('');
+    }
+
+    function card(m){
+      const thumb=m.thumbnailUrl||m.thumb||`https://picsum.photos/seed/${m.id}/180/260`;
+      return `<div class="mcard" onclick="openModal('${m.id}')">
+        <img src="${thumb}" alt="${m.title}" loading="lazy" onerror="this.src='https://picsum.photos/seed/${m.id}/180/260'"/>
+        <div class="mcard-info">
+          <div class="mcard-title">${m.title}</div>
+          <div class="mcard-meta">${m.genre} • ${m.year} • ⭐${m.rating||'—'}</div>
+        </div>
+        <div class="mcard-overlay">
+          <div class="ov-play" onclick="event.stopPropagation();playMovie('${m.id}')"><i class="fas fa-play"></i></div>
+          <div class="ov-btns">
+            <div class="ov-btn" onclick="event.stopPropagation();addList('${m.id}')" title="My List"><i class="fas fa-plus"></i></div>
+            <div class="ov-btn" onclick="event.stopPropagation();openModal('${m.id}')" title="Info"><i class="fas fa-info"></i></div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // MODAL
+    function openModal(id){
+      const m=allMovies.find(x=>x.id===id);
+      if(!m)return;
+      currentModalMovie=m;
+      const thumb=m.thumbnailUrl||m.thumb||`https://picsum.photos/seed/${m.id}/580/260`;
+      document.getElementById('mImg').src=thumb;
+      document.getElementById('mImg').onerror=function(){this.src=`https://picsum.photos/seed/${m.id}/580/260`;};
+      document.getElementById('mTitle').textContent=m.title;
+      document.getElementById('mRat').textContent=`⭐ ${m.rating||'—'}`;
+      document.getElementById('mYear').textContent=m.year;
+      document.getElementById('mGenre').textContent=m.genre;
+      document.getElementById('mAge').textContent=m.age||'U/A';
+      document.getElementById('mDur').textContent=m.duration?m.duration+' min':'';
+      document.getElementById('mDesc').textContent=m.description;
+      document.getElementById('mCast').innerHTML=m.cast?.length?`<strong>Cast:</strong> ${m.cast.join(', ')}`:'';
+      document.getElementById('infoModal').classList.add('open');
+    }
+
+    function playHero(){ if(heroMovieId) playMovie(heroMovieId); }
+    function playFromModal(){ if(currentModalMovie){ document.getElementById('infoModal').classList.remove('open'); playMovie(currentModalMovie.id); } }
+    function playMovie(id){ const m=allMovies.find(x=>x.id===id); if(m){ sessionStorage.setItem('currentMovie',JSON.stringify(m)); window.location.href='player.html'; } }
+
+    function addList(id){
+      const m=allMovies.find(x=>x.id===id); if(!m)return;
+      if(!myList.find(x=>x.id===id)){ myList.push(m); localStorage.setItem('vnMyList',JSON.stringify(myList)); }
+      showToast(`"${m.title}" added to My List ✓`);
+    }
+    function addListFromModal(){ if(currentModalMovie) addList(currentModalMovie.id); }
+    function shareMovie(){ navigator.clipboard?.writeText(location.origin+'/pages/home.html'); showToast('Link copied!'); }
+
+    // SEARCH
+    function liveSearch(q){
+      if(!q.trim()){ document.getElementById('searchSection').style.display='none'; document.getElementById('rowsSection').style.display='block'; return; }
+      document.getElementById('searchSection').style.display='block';
+      document.getElementById('rowsSection').style.display='none';
+      const found=allMovies.filter(m=>m.title.toLowerCase().includes(q.toLowerCase())||m.genre.toLowerCase().includes(q.toLowerCase())||(m.cast||[]).some(c=>c.toLowerCase().includes(q.toLowerCase())));
+      document.getElementById('searchGrid').innerHTML=found.length?found.map(m=>card(m)).join(''):`<div style="color:var(--muted);padding:40px 0">No results for "${q}"</div>`;
+    }
+
+    async function signout(){ await fetch('/api/signout',{method:'POST',credentials:'include'}); window.location.href='../index.html'; }
+    function showToast(msg,ok=true){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(ok?' ok':''); setTimeout(()=>t.classList.remove('show'),3000); }
+  </script>
+</body>
+</html>

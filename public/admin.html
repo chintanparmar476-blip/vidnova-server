@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VidNova – Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--accent:#e50914;--gold:#f5c518;--green:#4caf50;--text:#f0f0f0;--muted:#9999aa;--border:rgba(255,255,255,.08);--r:12px;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
+
+    /* LOGIN */
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(229,9,20,.08) 0%,transparent 70%);}
+    .login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:100%;max-width:420px;text-align:center;}
+    .login-logo{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;margin-bottom:8px;}
+    .login-logo span{color:var(--accent);}
+    .login-badge{display:inline-block;background:rgba(229,9,20,.15);border:1px solid var(--accent);color:var(--accent);font-size:.75rem;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:2px;margin-bottom:28px;}
+    .inp{width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:1rem;font-family:'Outfit',sans-serif;margin-bottom:14px;transition:border-color .2s;}
+    .inp:focus{outline:none;border-color:var(--accent);}
+    .btn-red{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:background .2s;}
+    .btn-red:hover{background:#c1070e;}
+    .err-msg{color:#ff4d4d;font-size:.85rem;margin-bottom:12px;display:none;}
+
+    /* LAYOUT */
+    .admin-layout{display:flex;min-height:100vh;}
+    .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:50;}
+    .sidebar-logo{padding:24px 20px;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;border-bottom:1px solid var(--border);}
+    .sidebar-logo span{color:var(--accent);}
+    .sidebar-badge{background:var(--accent);color:#fff;font-size:.65rem;padding:2px 8px;border-radius:3px;font-weight:700;margin-left:6px;vertical-align:middle;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:13px 20px;color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;background:none;width:100%;text-align:left;}
+    .nav-item:hover,.nav-item.active{background:rgba(229,9,20,.1);color:var(--text);border-right:3px solid var(--accent);}
+    .nav-item i{width:18px;text-align:center;}
+    .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+    .admin-info{font-size:.8rem;color:var(--muted);margin-bottom:10px;}
+    .btn-signout{width:100%;padding:9px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem;transition:all .2s;}
+    .btn-signout:hover{border-color:var(--accent);color:var(--accent);}
+    .main-content{margin-left:240px;flex:1;padding:32px;}
+
+    /* TABS */
+    .tab-panel{display:none;} .tab-panel.active{display:block;}
+    .page-title{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;margin-bottom:4px;}
+    .page-sub{color:var(--muted);margin-bottom:28px;font-size:.9rem;}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;}
+    .stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;margin-bottom:4px;}
+    .stat-label{color:var(--muted);font-size:.8rem;letter-spacing:1px;text-transform:uppercase;}
+    .stat-icon{font-size:1.6rem;margin-bottom:8px;}
+
+    /* UPLOAD FORM */
+    .upload-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:32px;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{margin-bottom:0;}
+    .form-group.full{grid-column:1/-1;}
+    label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;font-weight:500;}
+    input[type=text],input[type=number],select,textarea{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif;font-size:.95rem;transition:border-color .2s;}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+    textarea{resize:vertical;min-height:90px;}
+    select option{background:var(--surface2);}
+
+    /* DROP ZONES */
+    .drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:36px 20px;text-align:center;cursor:pointer;transition:all .3s;position:relative;}
+    .drop-zone:hover,.drop-zone.over{border-color:var(--accent);background:rgba(229,9,20,.04);}
+    .drop-zone i{font-size:2.4rem;color:var(--accent);margin-bottom:10px;}
+    .drop-zone h4{font-size:1rem;margin-bottom:6px;}
+    .drop-zone p{color:var(--muted);font-size:.8rem;}
+    .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+    .file-chosen{margin-top:10px;font-size:.85rem;color:var(--green);}
+    .thumb-preview{width:90px;height:126px;border-radius:6px;overflow:hidden;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;background:var(--surface2);margin-top:10px;}
+    .thumb-preview img{width:100%;height:100%;object-fit:cover;}
+
+    /* PROGRESS */
+    .progress-section{margin-top:20px;display:none;}
+    .prog-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin:8px 0;}
+    .prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),#ff6b35);border-radius:5px;width:0%;transition:width .3s;}
+    .prog-status{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);}
+    .upload-btn{margin-top:20px;padding:14px 40px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:10px;}
+    .upload-btn:hover{background:#c1070e;}
+    .upload-btn:disabled{background:#555;cursor:not-allowed;}
+
+    /* MOVIES TABLE */
+    .movies-table{width:100%;border-collapse:collapse;}
+    .movies-table th{text-align:left;padding:12px 14px;font-size:.75rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+    .movies-table td{padding:14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:.9rem;}
+    .movies-table tr:hover td{background:rgba(255,255,255,.02);}
+    .thumb-sm{width:44px;height:62px;object-fit:cover;border-radius:4px;}
+    .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:4px;letter-spacing:.5px;}
+    .badge-pub{background:rgba(76,175,80,.15);color:var(--green);}
+    .badge-draft{background:rgba(255,193,7,.1);color:#ffc107;}
+    .tbl-actions{display:flex;gap:8px;}
+    .tbl-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:.8rem;font-family:'Outfit',sans-serif;transition:all .2s;}
+    .tbl-btn:hover{color:var(--text);border-color:var(--text);}
+    .tbl-btn.danger:hover{color:#ff4d4d;border-color:#ff4d4d;}
+    .tbl-btn.success:hover{color:var(--green);border-color:var(--green);}
+    .empty-table{text-align:center;padding:60px 20px;color:var(--muted);}
+    .empty-table i{font-size:3rem;margin-bottom:12px;display:block;}
+
+    /* SEARCH + FILTER */
+    .table-controls{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .search-inp{flex:1;min-width:200px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif;font-size:.9rem;}
+    .search-inp:focus{outline:none;border-color:var(--accent);}
+    .filter-sel{padding:10px 14px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif;font-size:.9rem;}
+
+    /* EDIT MODAL */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+    .modal-bg.open{opacity:1;pointer-events:all;}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:540px;width:90%;max-height:85vh;overflow-y:auto;transform:scale(.92);transition:transform .3s;}
+    .modal-bg.open .modal-box{transform:scale(1);}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;margin-bottom:20px;}
+    .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;margin-top:-4px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--accent);padding:14px 18px;border-radius:10px;font-size:.9rem;max-width:300px;transform:translateX(200%);transition:transform .3s;}
+    .toast.show{transform:translateX(0);}
+    .toast.ok{border-left-color:var(--green);}
+
+    @media(max-width:768px){
+      .sidebar{width:200px;} .main-content{margin-left:200px;}
+      .form-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">VID<span>NOVA</span></div>
+    <div class="login-badge">ADMIN PANEL</div>
+    <div class="err-msg" id="loginErr">Invalid credentials.</div>
+    <input class="inp" type="email" id="loginEmail" placeholder="Admin Email" value="chintan@vidnova"/>
+    <input class="inp" type="password" id="loginPass" placeholder="Password" value="upload@2410" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="btn-red" onclick="doLogin()">
+      <i class="fas fa-lock"></i> &nbsp; Sign In to Admin
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ ADMIN LAYOUT ══════════ -->
+<div id="adminLayout" class="admin-layout" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">VID<span>NOVA</span> <span class="sidebar-badge">ADMIN</span></div>
+    <nav style="flex:1;padding:12px 0">
+      <button class="nav-item active" onclick="switchTab('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</button>
+      <button class="nav-item" onclick="switchTab('upload',this)"><i class="fas fa-cloud-upload-alt"></i> Upload Movie</button>
+      <button class="nav-item" onclick="switchTab('manage',this)"><i class="fas fa-film"></i> Manage Movies</button>
+      <button class="nav-item" onclick="switchTab('users',this)"><i class="fas fa-users"></i> Users</button>
+      <hr style="border-color:var(--border);margin:8px 16px"/>
+      <a class="nav-item" href="/" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">Signed in as<br/><strong>chintan@vidnova</strong></div>
+      <button class="btn-signout" onclick="doSignout()"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Welcome back, Chintan. Here's your VidNova overview.</div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-val" id="st-movies">—</div><div class="stat-label">Total Movies</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" id="st-pub">—</div><div class="stat-label">Published</div></div>
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-val" id="st-draft">—</div><div class="stat-label">Drafts</div></div>
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val" id="st-users">—</div><div class="stat-label">Registered Users</div></div>
+        <div class="stat-card"><div class="stat-icon">💾</div><div class="stat-val" id="st-size">—</div><div class="stat-label">Storage Used</div></div>
+      </div>
+
+      <!-- Recent uploads -->
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;margin-bottom:14px">Recent Uploads</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        <table class="movies-table" id="recentTable">
+          <thead><tr><th></th><th>Title</th><th>Genre</th><th>Status</th><th>Uploaded</th></tr></thead>
+          <tbody id="recentBody"><tr><td colspan="5" class="empty-table"><i class="fas fa-film"></i>No movies yet. Upload your first one!</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── UPLOAD ── -->
+    <div class="tab-panel" id="tab-upload">
+      <div class="page-title">Upload Movie</div>
+      <div class="page-sub">Add a new movie to VidNova. Fill all fields and upload the video file.</div>
+
+      <div class="upload-card">
+        <div class="form-grid">
+          <!-- Title -->
+          <div class="form-group full">
+            <label>Movie Title *</label>
+            <input type="text" id="u-title" placeholder="e.g. Avengers: Endgame"/>
+          </div>
+
+          <!-- Video file -->
+          <div class="form-group full">
+            <label>Video File * (MP4, MKV, AVI, MOV – max 4GB)</label>
+            <div class="drop-zone" id="videoDrop" ondragover="dz(event,'videoDrop')" ondragleave="dzOff('videoDrop')" ondrop="dzDrop(event,'videoFile','videoDrop')">
+              <input type="file" id="videoFile" accept="video/*" onchange="onVideoSelect(this)"/>
+              <i class="fas fa-film"></i>
+              <h4>Drop video file here</h4>
+              <p>or click to browse</p>
+              <div class="file-chosen" id="videoChosen" style="display:none"></div>
+            </div>
+          </div>
+
+          <!-- Thumbnail -->
+          <div class="form-group">
+            <label>Movie Poster / Thumbnail *</label>
+            <div class="drop-zone" id="thumbDrop" ondragover="dz(event,'thumbDrop')" ondragleave="dzOff('thumbDrop')" ondrop="dzDrop(event,'thumbFile','thumbDrop')">
+              <input type="file" id="thumbFile" accept="image/*" onchange="onThumbSelect(this)"/>
+              <i class="fas fa-image"></i>
+              <h4>Drop poster image</h4>
+              <p>JPG, PNG, WEBP</p>
+            </div>
+            <div class="thumb-preview" id="thumbPreview" style="display:none"><img id="thumbImg" src="" alt=""/></div>
+          </div>
+
+          <!-- Genre + Year -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-group">
+              <label>Genre *</label>
+              <select id="u-genre">
+                <option value="">Select Genre</option>
+                <option>Action</option><option>Drama</option><option>Comedy</option>
+                <option>Thriller</option><option>Horror</option><option>Romance</option>
+                <option>Sci-Fi</option><option>Documentary</option><option>Animation</option>
+                <option>Adventure</option><option>Mystery</option><option>Crime</option><option>Family</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Release Year</label>
+              <input type="number" id="u-year" placeholder="2024" min="1900" max="2030" value="2024"/>
+            </div>
+            <div class="form-group">
+              <label>Language</label>
+              <select id="u-lang">
+                <option>Hindi</option><option>English</option><option>Gujarati</option>
+                <option>Tamil</option><option>Telugu</option><option>Marathi</option>
+                <option>Bengali</option><option>Kannada</option><option>Malayalam</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Age Rating</label>
+              <select id="u-age">
+                <option>U</option><option>U/A 7+</option><option>U/A 13+</option><option>U/A 16+</option><option>A</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Duration (minutes)</label>
+              <input type="number" id="u-duration" placeholder="120" min="1"/>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full">
+            <label>Description *</label>
+            <textarea id="u-desc" placeholder="Write a compelling description of your movie..."></textarea>
+          </div>
+
+          <!-- Cast + Director -->
+          <div class="form-group">
+            <label>Cast (comma-separated)</label>
+            <input type="text" id="u-cast" placeholder="Shah Rukh Khan, Deepika Padukone"/>
+          </div>
+          <div class="form-group">
+            <label>Director</label>
+            <input type="text" id="u-director" placeholder="Sanjay Leela Bhansali"/>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-group full">
+            <label>Tags (comma-separated)</label>
+            <input type="text" id="u-tags" placeholder="blockbuster, must-watch, 2024"/>
+          </div>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress-section" id="progressSection">
+          <div class="prog-status">
+            <span id="progStatus">Uploading...</span>
+            <span id="progPct">0%</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+          <div style="font-size:.8rem;color:var(--muted)" id="progFile"></div>
+        </div>
+
+        <button class="upload-btn" id="uploadBtn" onclick="submitUpload()">
+          <i class="fas fa-cloud-upload-alt"></i> Upload Movie to VidNova
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MANAGE MOVIES ── -->
+    <div class="tab-panel" id="tab-manage">
+      <div class="page-title">Manage Movies</div>
+      <div class="page-sub" id="manageCount">All uploaded movies</div>
+
+      <div class="table-controls">
+        <input class="search-inp" type="text" placeholder="Search movies..." oninput="filterManage(this.value)" id="manageSearch"/>
+        <select class="filter-sel" onchange="filterManage(document.getElementById('manageSearch').value,this.value)" id="manageGenre">
+          <option value="">All Genres</option>
+          <option>Action</option><option>Drama</option><option>Comedy</option><option>Thriller</option>
+          <option>Sci-Fi</option><option>Horror</option><option>Romance</option><option>Documentary</option>
+        </select>
+        <select class="filter-sel" onchange="filterManage(document.getElementById('manageSearch').value,document.getElementById('manageGenre').value,this.value)" id="manageStatus">
+          <option value="">All Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        <table class="movies-table">
+          <thead><tr><th>Poster</th><th>Title</th><th>Genre</th><th>Year</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="manageBody"><tr><td colspan="6" class="empty-table"><i class="fas fa-film"></i>No movies yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="tab-panel" id="tab-users">
+      <div class="page-title">Users</div>
+      <div class="page-sub">Registered VidNova users</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        <table class="movies-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Joined</th></tr></thead>
+          <tbody id="usersBody"><tr><td colspan="4" class="empty-table"><i class="fas fa-users"></i>No users yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal" onclick="closeEdit(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="document.getElementById('editModal').classList.remove('open')"><i class="fas fa-times"></i></button>
+    <div class="modal-title">Edit Movie</div>
+    <input type="hidden" id="editId"/>
+    <div class="form-group" style="margin-bottom:14px"><label>Title</label><input type="text" id="editTitle" class="inp" style="margin:0"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="form-group"><label>Genre</label>
+        <select id="editGenre" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif">
+          <option>Action</option><option>Drama</option><option>Comedy</option><option>Thriller</option><option>Sci-Fi</option><option>Horror</option><option>Romance</option><option>Documentary</option><option>Adventure</option><option>Crime</option><option>Family</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Year</label><input type="number" id="editYear" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif"/></div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px"><label>Description</label><textarea id="editDesc" style="width:100%;min-height:80px;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif;resize:vertical"></textarea></div>
+    <div class="form-group" style="margin-bottom:20px"><label>Director</label><input type="text" id="editDirector" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif"/></div>
+    <button class="btn-red" onclick="saveEdit()">Save Changes</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allMovies = [];
+
+// ── LOGIN ──────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  try {
+    const r = await fetch('/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pass }), credentials:'include'
+    });
+    if (r.ok) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminLayout').style.display = 'flex';
+      loadDashboard();
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  } catch(e) {
+    alert('Cannot connect to server. Make sure Node.js server is running on port 3000.');
+  }
+}
+
+async function doSignout() {
+  await fetch('/api/signout', { method:'POST', credentials:'include' });
+  location.reload();
+}
+
+// Check if already logged in
+window.onload = async () => {
+  try {
+    const r = await fetch('/api/me', { credentials:'include' });
+    if (r.ok) {
+      const d = await r.json();
+      if (d.admin) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminLayout').style.display = 'flex';
+        loadDashboard();
+      }
+    }
+  } catch(e) {}
+};
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'manage') loadManage();
+  if (name === 'users') loadUsers();
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [sr, mr] = await Promise.all([
+      fetch('/api/admin/stats', { credentials:'include' }),
+      fetch('/api/admin/movies', { credentials:'include' })
+    ]);
+    const stats  = await sr.json();
+    const movies = await mr.json();
+    allMovies = movies;
+    document.getElementById('st-movies').textContent = stats.totalMovies;
+    document.getElementById('st-pub').textContent    = stats.publishedMovies;
+    document.getElementById('st-draft').textContent  = stats.draftMovies;
+    document.getElementById('st-users').textContent  = stats.totalUsers;
+    document.getElementById('st-size').textContent   = stats.totalSize;
+
+    const recent = [...movies].sort((a,b) => new Date(b.uploadedAt)-new Date(a.uploadedAt)).slice(0,5);
+    const tbody  = document.getElementById('recentBody');
+    tbody.innerHTML = recent.length ? recent.map(m => `
+      <tr>
+        <td><img src="/thumbnails/${m.thumbnail}" class="thumb-sm" alt="" onerror="this.src='https://picsum.photos/44/62'"/></td>
+        <td style="font-weight:600">${m.title}</td>
+        <td style="color:var(--muted)">${m.genre}</td>
+        <td><span class="badge badge-${m.status==='published'?'pub':'draft'}">${m.status}</span></td>
+        <td style="color:var(--muted);font-size:.8rem">${new Date(m.uploadedAt).toLocaleDateString()}</td>
+      </tr>`) .join('')
+    : '<tr><td colspan="5" class="empty-table"><i class="fas fa-film"></i>No movies yet</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+// ── MANAGE MOVIES ────────────────────────────────────────────
+async function loadManage() {
+  const r = await fetch('/api/admin/movies', { credentials:'include' });
+  allMovies = await r.json();
+  document.getElementById('manageCount').textContent = `${allMovies.length} total movies`;
+  renderManageTable(allMovies);
+}
+
+function renderManageTable(movies) {
+  const tbody = document.getElementById('manageBody');
+  if (!movies.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-table"><i class="fas fa-film"></i>No movies found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = movies.map(m => `
+    <tr id="row-${m.id}">
+      <td><img src="/thumbnails/${m.thumbnail}" class="thumb-sm" alt="" onerror="this.src='https://picsum.photos/44/62'"/></td>
+      <td>
+        <div style="font-weight:600">${m.title}</div>
+        <div style="font-size:.75rem;color:var(--muted)">${m.duration ? m.duration + ' min' : ''} ${m.language || ''}</div>
+      </td>
+      <td style="color:var(--muted)">${m.genre}</td>
+      <td style="color:var(--muted)">${m.year}</td>
+      <td><span class="badge badge-${m.status==='published'?'pub':'draft'}">${m.status}</span></td>
+      <td>
+        <div class="tbl-actions">
+          <button class="tbl-btn success" onclick="toggleStatus('${m.id}')">
+            <i class="fas fa-${m.status==='published'?'eye-slash':'eye'}"></i> ${m.status==='published'?'Unpublish':'Publish'}
+          </button>
+          <button class="tbl-btn" onclick="openEdit('${m.id}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="tbl-btn danger" onclick="deleteMovie('${m.id}','${m.title.replace(/'/g,'\\\'')}')" ><i class="fas fa-trash"></i> Delete</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterManage(q='', genre='', status='') {
+  let list = allMovies.filter(m => {
+    const mq = !q || m.title.toLowerCase().includes(q.toLowerCase()) || m.genre.toLowerCase().includes(q.toLowerCase());
+    const mg = !genre || m.genre === genre;
+    const ms = !status || m.status === status;
+    return mq && mg && ms;
+  });
+  renderManageTable(list);
+}
+
+async function toggleStatus(id) {
+  const r = await fetch(`/api/admin/movies/${id}/toggle`, { method:'POST', credentials:'include' });
+  const d = await r.json();
+  showToast(d.status === 'published' ? '✅ Movie Published!' : '📝 Moved to Draft', d.status === 'published');
+  loadManage();
+}
+
+async function deleteMovie(id, title) {
+  if (!confirm(`Delete "${title}"?\n\nThis will permanently delete the video file. Cannot be undone.`)) return;
+  const r = await fetch(`/api/admin/movies/${id}`, { method:'DELETE', credentials:'include' });
+  if (r.ok) { showToast(`🗑️ "${title}" deleted`); loadManage(); loadDashboard(); }
+  else showToast('Delete failed', false);
+}
+
+// ── EDIT MODAL ───────────────────────────────────────────────
+function openEdit(id) {
+  const m = allMovies.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('editId').value       = m.id;
+  document.getElementById('editTitle').value    = m.title;
+  document.getElementById('editGenre').value    = m.genre;
+  document.getElementById('editYear').value     = m.year;
+  document.getElementById('editDesc').value     = m.description;
+  document.getElementById('editDirector').value = m.director || '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+async function saveEdit() {
+  const id = document.getElementById('editId').value;
+  const body = {
+    title:       document.getElementById('editTitle').value,
+    genre:       document.getElementById('editGenre').value,
+    year:        parseInt(document.getElementById('editYear').value),
+    description: document.getElementById('editDesc').value,
+    director:    document.getElementById('editDirector').value,
+  };
+  const r = await fetch(`/api/admin/movies/${id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body), credentials:'include'
+  });
+  if (r.ok) {
+    document.getElementById('editModal').classList.remove('open');
+    showToast('✅ Movie updated!', true);
+    loadManage(); loadDashboard();
+  }
+}
+
+function closeEdit(e) { document.getElementById('editModal').classList.remove('open'); }
+
+// ── USERS ─────────────────────────────────────────────────────
+async function loadUsers() {
+  // Users are fetched via stats endpoint (we'll show from localStorage on client side)
+  const tbody = document.getElementById('usersBody');
+  // Actually fetch from a users endpoint we can add - for now show message
+  tbody.innerHTML = `
+    <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted)">
+      <i class="fas fa-info-circle" style="color:var(--accent);margin-right:8px"></i>
+      User accounts are stored in <code style="background:var(--surface2);padding:2px 6px;border-radius:4px">data/users.json</code>
+    </td></tr>`;
+  try {
+    const r = await fetch('/api/admin/users', { credentials:'include' });
+    if (r.ok) {
+      const users = await r.json();
+      if (users.length) {
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td style="font-weight:600">${u.name}</td>
+            <td style="color:var(--muted)">${u.email}</td>
+            <td><span class="badge ${u.plan ? 'badge-pub' : ''}">${u.plan || 'Free'}</span></td>
+            <td style="color:var(--muted);font-size:.8rem">${new Date(u.joined).toLocaleDateString()}</td>
+          </tr>`).join('');
+      }
+    }
+  } catch(e) {}
+}
+
+// ── FILE UPLOADS ──────────────────────────────────────────────
+function onVideoSelect(inp) {
+  if (!inp.files[0]) return;
+  const f = inp.files[0];
+  const el = document.getElementById('videoChosen');
+  el.style.display = 'block';
+  el.innerHTML = `<i class="fas fa-check-circle"></i> ${f.name} (${(f.size/1024/1024).toFixed(0)} MB)`;
+  // Auto-fill title
+  const titleInp = document.getElementById('u-title');
+  if (!titleInp.value) titleInp.value = f.name.replace(/\.[^.]+$/,'').replace(/[-_.]/g,' ');
+}
+
+function onThumbSelect(inp) {
+  if (!inp.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('thumbImg').src = e.target.result;
+    document.getElementById('thumbPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+// Drag & drop helpers
+function dz(e, id)    { e.preventDefault(); document.getElementById(id).classList.add('over'); }
+function dzOff(id)    { document.getElementById(id).classList.remove('over'); }
+function dzDrop(e, inputId, dzId) {
+  e.preventDefault(); dzOff(dzId);
+  const inp = document.getElementById(inputId);
+  const dt  = new DataTransfer();
+  dt.items.add(e.dataTransfer.files[0]);
+  inp.files = dt.files;
+  inp.dispatchEvent(new Event('change'));
+}
+
+// ── SUBMIT UPLOAD ─────────────────────────────────────────────
+async function submitUpload() {
+  const title = document.getElementById('u-title').value.trim();
+  const genre = document.getElementById('u-genre').value;
+  const desc  = document.getElementById('u-desc').value.trim();
+  const video = document.getElementById('videoFile').files[0];
+  const thumb = document.getElementById('thumbFile').files[0];
+
+  if (!title) { showToast('Enter movie title', false); return; }
+  if (!genre) { showToast('Select a genre', false); return; }
+  if (!desc)  { showToast('Enter description', false); return; }
+  if (!video) { showToast('Select a video file', false); return; }
+  if (!thumb) { showToast('Select a poster image', false); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+  document.getElementById('progressSection').style.display = 'block';
+
+  const formData = new FormData();
+  formData.append('video',     video);
+  formData.append('thumbnail', thumb);
+  formData.append('title',     title);
+  formData.append('genre',     genre);
+  formData.append('year',      document.getElementById('u-year').value);
+  formData.append('language',  document.getElementById('u-lang').value);
+  formData.append('age',       document.getElementById('u-age').value);
+  formData.append('duration',  document.getElementById('u-duration').value);
+  formData.append('description', desc);
+  formData.append('cast',      document.getElementById('u-cast').value);
+  formData.append('director',  document.getElementById('u-director').value);
+  formData.append('tags',      document.getElementById('u-tags').value);
+
+  // XHR with progress
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/admin/upload');
+  xhr.withCredentials = true;
+
+  xhr.upload.onprogress = (e) => {
+    if (!e.lengthComputable) return;
+    const pct = Math.round((e.loaded / e.total) * 100);
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progPct').textContent = pct + '%';
+    document.getElementById('progFile').textContent = `${(e.loaded/1024/1024).toFixed(1)} MB / ${(e.total/1024/1024).toFixed(1)} MB`;
+    if (pct < 100) document.getElementById('progStatus').textContent = 'Uploading video...';
+    else document.getElementById('progStatus').textContent = 'Processing...';
+  };
+
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const result = JSON.parse(xhr.responseText);
+      document.getElementById('progStatus').textContent = '✅ Upload complete!';
+      document.getElementById('progFill').style.background = 'var(--green)';
+      showToast(`🎬 "${title}" uploaded successfully!`, true);
+      // Reset form after 2s
+      setTimeout(() => {
+        resetUploadForm();
+        switchTab('manage', document.querySelector('.nav-item:nth-child(3)'));
+        loadManage();
+      }, 2000);
+    } else {
+      const err = JSON.parse(xhr.responseText);
+      showToast('Upload failed: ' + (err.error || 'Unknown error'), false);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Movie to VidNova';
+    }
+  };
+
+  xhr.onerror = () => {
+    showToast('Network error. Check server is running.', false);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Movie to VidNova';
+  };
+
+  xhr.send(formData);
+}
+
+function resetUploadForm() {
+  ['u-title','u-desc','u-cast','u-director','u-tags','u-duration'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('u-genre').value = '';
+  document.getElementById('u-year').value  = '2024';
+  document.getElementById('videoFile').value = '';
+  document.getElementById('thumbFile').value  = '';
+  document.getElementById('videoChosen').style.display = 'none';
+  document.getElementById('thumbPreview').style.display = 'none';
+  document.getElementById('progressSection').style.display = 'none';
+  document.getElementById('progFill').style.width = '0%';
+  document.getElementById('progFill').style.background = 'linear-gradient(90deg,var(--accent),#ff6b35)';
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Movie to VidNova';
+}
+
+// ── TOAST ──────────────────────────────────────────────────────
+function showToast(msg, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (ok ? ' ok' : '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

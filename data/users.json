@@ -1,0 +1,30 @@
+[
+  {
+    "id": "523f8e00-cc04-4b9a-a545-f5130b815de2",
+    "name": "chintan",
+    "email": "250130141033@gecg.ac.in",
+    "password": "123456789",
+    "plan": "standard",
+    "joined": "2026-06-03T03:57:00.823Z"
+  },
+  {
+    "id": "6c28059f-41c8-463d-ac83-fa32b6e60821",
+    "name": "chintant",
+    "email": "chintanparmar476@gmail.com",
+    "password": "123456789",
+    "plan": "premium",
+    "joined": "2026-06-03T07:06:48.037Z"
+  },
+  {
+    "id": "699cec6a-3e00-436f-b96c-1956595e70be",
+    "name": "darsh",
+    "email": "chintan964@gmail.com",
+    "password": "123456789",
+    "plan": null,
+    "joined": "2026-06-03T07:22:15.613Z"
+  },
+  {
+    "id" : ""
+
+  }
+]
