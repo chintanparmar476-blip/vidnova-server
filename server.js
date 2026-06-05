@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const app  = express();
 const PORT = 3000;
+console.log('PORT env value:', process.env.PORT);
 
 ['uploads/videos','uploads/thumbnails','data'].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
