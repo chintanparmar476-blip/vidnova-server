@@ -8,7 +8,7 @@ const fs             = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 const app  = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 ['uploads/videos','uploads/thumbnails','data'].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -26,7 +26,7 @@ const ADMIN = { email:'chintan@vidnova', password:'upload@2410' };
 app.use(cors({ origin:true, credentials:true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
-app.use(session({ secret:'vidnova_2025_secret', resave:false, saveUninitialized:false, cookie:{ maxAge:86400000 } }));
+app.use(session({ secret: process.env.SESSION_SECRET || 'vidnova_2025_secret', resave:false, saveUninitialized:false, cookie:{ maxAge:86400000, secure: process.env.NODE_ENV==='production', sameSite: process.env.NODE_ENV==='production' ? 'none' : 'lax' } }));
 app.use(express.static(path.join(__dirname,'public')));
 app.use('/videos',     express.static(path.join(__dirname,'uploads/videos')));
 app.use('/thumbnails', express.static(path.join(__dirname,'uploads/thumbnails')));
@@ -59,9 +59,9 @@ app.post('/api/signup',(req,res)=>{
   if(!name||!email||!password) return res.status(400).json({error:'All fields required'});
   const users=readUsers();
   if(users.find(u=>u.email===email)) return res.status(400).json({error:'Email already registered'});
-  const user={id:uuidv4(),name,email,password,plan:null,joined:new Date().toISOString()};
+  const user={id:uuidv4(),name,email,password,plan:'standard',joined:new Date().toISOString()};
   users.push(user); writeUsers(users);
-  req.session.user={id:user.id,name,email,plan:null,role:'user'};
+  req.session.user={id:user.id,name,email,plan:'standard',role:'user'};
   res.json({success:true,user:req.session.user});
 });
 app.post('/api/signin',(req,res)=>{
