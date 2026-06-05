@@ -1,25 +1,5 @@
-
-</script>
 <!DOCTYPE html>
 <html lang="en">
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBpBjkp1x5zjXz1J5idSueBk2ZWCvRnvSo",
-    authDomain: "vidnova-striming.firebaseapp.com",
-    projectId: "vidnova-striming",
-    storageBucket: "vidnova-striming.firebasestorage.app",
-    messagingSenderId: "637437974202",
-    appId: "1:637437974202:web:8d9869b82c13dcb7ef9483",
-    measurementId: "G-HF9KL8215Q"
-  };
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>VidNova – Sign Up</title>
@@ -57,45 +37,154 @@
       <p class="auth-bot">Already have an account? <a href="signin.html">Sign In</a></p>
     </div>
   </main>
-  <script>
-    window.onload=()=>{
-      const e=sessionStorage.getItem('signupEmail'); if(e) document.getElementById('email').value=e;
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAnalytics }                         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile }
+                                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBpBjkp1x5zjXz1J5idSueBk2ZWCvRnvSo",
+      authDomain:        "vidnova-striming.firebaseapp.com",
+      projectId:         "vidnova-striming",
+      storageBucket:     "vidnova-striming.firebasestorage.app",
+      messagingSenderId: "637437974202",
+      appId:             "1:637437974202:web:8d9869b82c13dcb7ef9483",
+      measurementId:     "G-HF9KL8215Q"
     };
-    function tog(id,icon){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';icon.className=i.type==='password'?'fas fa-eye':'fas fa-eye-slash';}
-    function strength(v){const f=document.getElementById('strFill');let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;f.style.width=(s/4*100)+'%';f.style.background=s<=1?'#e50914':s<=2?'#ff9800':s<=3?'#ffc107':'#4caf50';}
-    function show(id,v){document.getElementById(id).style.display=v?'block':'none';}
-    async function signup(){
-      async function signup() {
-  const name  = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const pass  = document.getElementById('pass').value;
 
-  if (!name || !email || pass.length < 8) return;
+    const firebaseApp = initializeApp(firebaseConfig);
+    getAnalytics(firebaseApp);
+    const auth     = getAuth(firebaseApp);
+    const provider = new GoogleAuthProvider();
 
-  try {
-    const btn = document.getElementById('btn');
-    btn.textContent = 'Creating...'; btn.disabled = true;
+    // Expose to window so regular <script> can call them
+    window._fbAuth            = auth;
+    window._fbCreateUser      = createUserWithEmailAndPassword;
+    window._fbUpdateProfile   = updateProfile;
+    window._fbGoogleProvider  = provider;
+    window._fbSignInWithPopup = signInWithPopup;
+    window._fbReady           = true;
+  </script>
 
-    // Create user in Firebase
-    const cred = await window.firebaseCreateUser(window.firebaseAuth, email, pass);
+  <script>
+    window.onload = () => {
+      const e = sessionStorage.getItem('signupEmail');
+      if (e) document.getElementById('email').value = e;
+    };
 
-    // Also save to your Node.js server
-    await fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password: pass }),
-      credentials: 'include'
-    });
+    function tog(id, icon) {
+      const i = document.getElementById(id);
+      i.type = i.type === 'password' ? 'text' : 'password';
+      icon.className = i.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
 
-    window.location.href = 'plan-select.html';
-  } catch(e) {
-    if (e.code === 'auth/email-already-in-use') alert('Email already registered.');
-    else if (e.code === 'auth/weak-password') alert('Password too weak.');
-    else alert(e.message);
-    btn.textContent = 'Create Account'; btn.disabled = false;
-  }
-}
-    function googleSignup(){ window.location.href='signin.html'; }
+    function strength(v) {
+      const f = document.getElementById('strFill');
+      let s = 0;
+      if (v.length >= 8) s++; if (/[A-Z]/.test(v)) s++;
+      if (/\d/.test(v)) s++;  if (/[^A-Za-z0-9]/.test(v)) s++;
+      f.style.width = (s / 4 * 100) + '%';
+      f.style.background = s <= 1 ? '#e50914' : s <= 2 ? '#ff9800' : s <= 3 ? '#ffc107' : '#4caf50';
+    }
+
+    function show(id, v) { document.getElementById(id).style.display = v ? 'block' : 'none'; }
+
+    async function signup() {
+      const name  = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const pass  = document.getElementById('pass').value;
+      const conf  = document.getElementById('conf').value;
+      const terms = document.getElementById('terms').checked;
+
+      let ok = true;
+      show('nameErr',  !name);                                          if (!name)  ok = false;
+      show('emailErr', !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) ok = false;
+      show('passErr',  pass.length < 8);                               if (pass.length < 8) ok = false;
+      show('confErr',  pass !== conf);                                 if (pass !== conf)   ok = false;
+      show('termsErr', !terms);                                        if (!terms) ok = false;
+      if (!ok) return;
+
+      const btn = document.getElementById('btn');
+      btn.textContent = 'Creating...'; btn.disabled = true;
+
+      // Wait for Firebase to be ready
+      let waited = 0;
+      while (!window._fbReady && waited < 5000) { await new Promise(r => setTimeout(r, 100)); waited += 100; }
+
+      try {
+        // 1. Create user in Firebase Auth
+        const cred = await window._fbCreateUser(window._fbAuth, email, pass);
+
+        // 2. Set display name in Firebase
+        await window._fbUpdateProfile(cred.user, { displayName: name });
+
+        // 3. Also save to Node.js server (for session + movie access)
+        const r = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password: pass }),
+          credentials: 'include'
+        });
+        const d = await r.json();
+
+        if (d.success || d.error === 'Email already registered') {
+          // Sign in to get server session
+          await fetch('/api/signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass }),
+            credentials: 'include'
+          });
+          sessionStorage.setItem('vnUser', JSON.stringify({ name, email, plan: null }));
+          window.location.href = 'plan-select.html';
+        } else {
+          throw new Error(d.error || 'Signup failed');
+        }
+
+      } catch (e) {
+        let msg = e.message;
+        if (e.code === 'auth/email-already-in-use') msg = 'Email already registered. Please sign in.';
+        else if (e.code === 'auth/weak-password')   msg = 'Password is too weak. Use at least 8 characters.';
+        else if (e.code === 'auth/invalid-email')   msg = 'Invalid email address.';
+        alert(msg);
+        btn.textContent = 'Create Account'; btn.disabled = false;
+      }
+    }
+
+    async function googleSignup() {
+      let waited = 0;
+      while (!window._fbReady && waited < 5000) { await new Promise(r => setTimeout(r, 100)); waited += 100; }
+
+      try {
+        const result = await window._fbSignInWithPopup(window._fbAuth, window._fbGoogleProvider);
+        const user   = result.user;
+
+        // Save to server (ignore if already exists)
+        await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: user.displayName || 'Google User', email: user.email, password: user.uid }),
+          credentials: 'include'
+        });
+
+        // Sign in to server session
+        const r = await fetch('/api/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email, password: user.uid }),
+          credentials: 'include'
+        });
+        const d = await r.json();
+        sessionStorage.setItem('vnUser', JSON.stringify(d.user || { name: user.displayName, email: user.email }));
+        window.location.href = 'plan-select.html';
+
+      } catch (e) {
+        if (e.code !== 'auth/popup-closed-by-user') alert(e.message);
+      }
+    }
   </script>
 </body>
 </html>
