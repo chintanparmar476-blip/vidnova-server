@@ -114,19 +114,27 @@
     let currentModalMovie = null;
 
     window.onload=async()=>{
-      // Auth check
+      // Auth check — try server session first, fallback to sessionStorage
+      let currentUser = null;
       try{
         const r=await fetch('/api/me',{credentials:'include'});
-        if(!r.ok){ window.location.href='signin.html'; return; }
-        const d=await r.json();
-        document.getElementById('navAv').innerHTML=(d.user.name||'U')[0].toUpperCase()+`<div class="avatar-drop">
-          <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
-          <a href="mylist.html"><i class="fas fa-bookmark"></i> My List</a>
-          <div class="sep"></div>
-          <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>`;
-        if(!d.user.plan){ window.location.href='plan-select.html'; return; }
-      }catch(e){ window.location.href='signin.html'; return; }
+        if(r.ok){ const d=await r.json(); currentUser=d.user; sessionStorage.setItem('vnUser',JSON.stringify(d.user)); }
+      }catch(e){}
+
+      // Fallback: sessionStorage (handles Render cold starts / cookie issues)
+      if(!currentUser){
+        const stored=sessionStorage.getItem('vnUser');
+        if(stored){ currentUser=JSON.parse(stored); }
+        else{ window.location.href='signin.html'; return; }
+      }
+
+      const initial=(currentUser.name||'U')[0].toUpperCase();
+      document.getElementById('navAv').innerHTML=initial+`<div class="avatar-drop">
+        <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+        <a href="mylist.html"><i class="fas fa-bookmark"></i> My List</a>
+        <div class="sep"></div>
+        <a href="#" onclick="signout()"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+      </div>`;
 
       await loadMovies();
       document.getElementById('loadScreen').style.display='none';
