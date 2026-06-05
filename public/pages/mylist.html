@@ -57,12 +57,10 @@
     let myList = JSON.parse(localStorage.getItem('vnMyList') || '[]');
 
     window.onload = async () => {
-      try {
-        const r = await fetch('/api/me', { credentials: 'include' });
-        if (!r.ok) { window.location.href = 'signin.html'; return; }
-        const d = await r.json();
-        document.getElementById('navAv').innerHTML = (d.user.name || 'U')[0].toUpperCase() + document.getElementById('navAv').querySelector('.avatar-drop').outerHTML;
-      } catch(e) { window.location.href = 'signin.html'; return; }
+      let currentUser=null;
+      try{const r=await fetch('/api/me',{credentials:'include'});if(r.ok){const d=await r.json();currentUser=d.user;sessionStorage.setItem('vnUser',JSON.stringify(d.user));}}catch(e){}
+      if(!currentUser){const s=sessionStorage.getItem('vnUser');if(s)currentUser=JSON.parse(s);else{window.location.href='signin.html';return;}}
+      document.getElementById('navAv').innerHTML=(currentUser.name||'U')[0].toUpperCase()+document.getElementById('navAv').querySelector('.avatar-drop').outerHTML;
       render();
     };
 
